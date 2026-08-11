@@ -75,7 +75,7 @@ flowchart TB
 | `storage` | Blob/S3/Local 对象边界 | 不决定文件业务状态 |
 | `jobs` | job name、payload、driver contract | 不导出具体 Trigger task 实现 |
 | `logger` | 结构化日志与未来 trace 装配 | 不替代审计和账本事实 |
-| `design-system` | UI primitive、token 和基础样式 | 不包含聊天业务状态 |
+| `design-system` | shadcn/ui Base Nova、Base UI primitive、token 和基础样式 | 不包含聊天业务状态，不混用 Radix-only primitive |
 
 业务增长后再按实际依赖新增 `auth`、`model-router`、`chat`、`billing`、`files`、`rag`、`tools`、`media`、`moderation` 和 `trigger`；不提前创建空包。
 
@@ -101,7 +101,7 @@ M0 已实现 Web 构建 profile 分离：Vercel 检测到系统变量 `VERCEL=1`
 ## 界面基线
 
 - 中性、清楚、克制，优先信息层级和状态，不使用无语义渐变、发光或毛玻璃。
-- 默认使用 `@repo/design-system` 和语义 token。
+- 默认使用 `@repo/design-system` 中仓库自有的 shadcn/ui + Base UI primitive 和语义 token。
 - Server Component 优先；交互、浏览器 API 或客户端状态才使用 Client Component。
 - 页面保持单一 `h1`，键盘、焦点、对比度和响应式属于完成标准。
 - 危险操作需要明确确认，错误不暴露凭证、上游原文或内部堆栈。

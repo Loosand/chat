@@ -46,7 +46,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 | AI | AI SDK 7；provider 与路由待实现 |
 | Data | Drizzle/PostgreSQL 为目标主线；当前只有连接边界 |
 | Jobs | 可插拔 JobDriver；Trigger.dev 可选，当前只有 contract |
-| UI | Tailwind CSS v4、共享 design-system |
+| UI | Tailwind CSS v4、shadcn/ui Base Nova、Base UI、共享 design-system |
 | Quality | TypeScript strict、Biome、Vitest |
 
 ## 项目地图
@@ -63,7 +63,7 @@ packages/
 ├── storage/               # 对象存储 contract
 ├── jobs/                  # 后台任务 driver contract
 ├── logger/                # 结构化日志 contract
-├── design-system/         # 共享 UI 与语义样式
+├── design-system/         # shadcn/ui + Base UI 与语义主题
 ├── next-config/           # Next.js 共享配置
 └── typescript-config/     # TypeScript 共享配置
 

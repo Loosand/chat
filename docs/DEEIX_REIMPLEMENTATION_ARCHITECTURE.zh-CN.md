@@ -104,7 +104,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | Monorepo | Bun workspace + Turborepo | 与 `../news` 一致；任务缓存、并行构建、内部包边界清晰 | package manager 可换，但不改领域 contract |
 | Web | Next.js App Router，Node runtime | 用户端、后台、API、SSR/RSC 同一产品；兼容流和主流 Node SDK | 不使用 Edge 承载核心聊天/计费 |
-| UI | React 19、Tailwind、shadcn/ui、AI Elements/自有组件 | 复用 DEEIX 交互，兼容 AI SDK UI | UI 与 domain 分离 |
+| UI | React 19、Tailwind、shadcn/ui Base Nova、Base UI、自有 AI 组件 | 统一无样式行为层与仓库自有组件源码 | UI 与 domain 分离；不直接依赖 Radix-only AI Elements |
 | AI | AI SDK 7 | 流生成、结构化输出、工具、MCP、图片和实验性视频的统一基础 | 自有 adapter registry 保留精确协议控制 |
 | 数据 | Drizzle ORM + PostgreSQL + pgvector | 与 `../news` 接近，显式 migration，Vercel/Docker 都成熟 | Repository ports；后续 SQLite adapter |
 | Auth | Better Auth + 自有身份域 | `../news` 已采用；Next 集成自然 | 2FA/SSO/会话审计等由自有表与插件补齐 |
@@ -206,7 +206,7 @@ packages/
   jobs/                        # JobDriver port、job ids、payload/result schema
   trigger/                     # Trigger.dev task 实现；只 export ./contracts
   logger/                      # structured log、OTel、redaction
-  design-system/               # shadcn/ui 基础与主题
+  design-system/               # shadcn/ui Base UI primitive 与主题
   admin-kit/                   # 后台表格、筛选、危险操作、JSON editor
   next-config/
   typescript-config/
@@ -1380,6 +1380,7 @@ Provider fixture 固定在仓库，避免测试必须调用真实收费 API。�
 | ADR-012 | Billing reservation 在流开始前持久化，ledger 与 price snapshot 不可变 |
 | ADR-013 | Web 只依赖 Trigger contract，不依赖 task 实现 |
 | ADR-014 | Docker 与 Vercel 使用 capability profile，不声称所有 profile 完全等能 |
+| ADR-015 | UI primitive 统一使用 shadcn/ui Base Nova + Base UI；AI 界面在此基础上自有组合，不混用 Radix-only 组件 |
 
 ## 30. 尚可在制定 Goal 时决定的产品选择
 

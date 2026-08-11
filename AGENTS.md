@@ -22,7 +22,7 @@ Chat 是一个从简开始的多模型聊天平台 Monorepo。当前只包含可
 - `packages/ai` 只封装 AI SDK 和 provider adapter，不访问数据库、缓存、任务系统或 Next.js。
 - `packages/database`、`cache`、`storage` 是基础设施 adapter，不依赖 Web。
 - `packages/jobs` 只定义任务 contract/driver；以后接入 Trigger.dev 时，Web 不得导入 task 实现。
-- `packages/design-system` 提供共享 primitive 和语义样式，业务页面不复制基础组件。
+- `packages/design-system` 拥有 shadcn/ui Base Nova + Base UI 的组件源码和语义主题；业务页面不复制基础组件，也不引入 Radix-only primitive。
 - 禁止跨包导入未导出的内部文件。
 
 ## 数据与安全
