@@ -6,7 +6,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLoosand%2Fchat&project-name=chat&repository-name=chat&root-directory=apps%2Fweb)
 
-按钮已预设 Monorepo Root Directory 为 `apps/web`。当前 M0 页面不要求环境变量；未来接入数据库、模型供应商或对象存储后，需要在 Vercel 项目中补充对应变量。
+按钮已预设 Monorepo Root Directory 为 `apps/web`。Vercel 使用 Next.js 原生部署产物，非 Vercel 构建保留 Docker 所需的 standalone 输出。当前 M0 页面不要求环境变量；未来接入数据库、模型供应商或对象存储后，需要在 Vercel 项目中补充对应变量。
 
 ## 核心同步协议（Mandatory）
 

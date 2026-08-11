@@ -1,7 +1,7 @@
 /**
- * [INPUT]: Next.js 的 NextConfig 类型和 Monorepo package 边界
- * [OUTPUT]: Web 应用共享的 typed routes、standalone 与转译配置
- * [POS]: @repo/next-config 唯一公共导出入口
+ * [INPUT]: Next.js 的 NextConfig 类型、VERCEL 系统变量和 Monorepo package 边界
+ * [OUTPUT]: Vercel 原生产物或自托管 standalone、typed routes 与转译配置
+ * [POS]: @repo/next-config 唯一公共导出入口，隔离云部署与容器部署的输出差异
  *
  * [PROTOCOL]:
  * 1. 构建输出、runtime 或转译边界变化时更新此 Header。
@@ -10,8 +10,11 @@
 
 import type { NextConfig } from "next";
 
+const deploymentOutput: NextConfig =
+  process.env.VERCEL === "1" ? {} : { output: "standalone" };
+
 export const config: NextConfig = {
-  output: "standalone",
+  ...deploymentOutput,
   transpilePackages: ["@repo/design-system"],
   typedRoutes: true,
 };

@@ -87,7 +87,9 @@ flowchart TB
 - Vercel Blob、S3-compatible、Local filesystem 通过 ObjectStore port 接入。
 - 所有 run、route、usage、price 和 provider identity 保存不可变快照。
 
-## 部署（规划）
+## 部署
+
+M0 已实现 Web 构建 profile 分离：Vercel 检测到系统变量 `VERCEL=1` 时使用平台原生 Next.js 产物；非 Vercel 环境生成 `output: standalone`，作为 Docker/自托管镜像入口。下列完整基础设施 profile 仍为规划。
 
 | Profile | 基础设施 | 定位 |
 | --- | --- | --- |

@@ -1,7 +1,7 @@
 /**
  * [INPUT]: @repo/next-config 的共享 Next.js 配置
- * [OUTPUT]: apps/web 的 Next.js 构建与运行配置
- * [POS]: Web 应用配置入口，保持 Vercel 与 Docker standalone 使用同一代码
+ * [OUTPUT]: apps/web 的平台感知 Next.js 构建与运行配置
+ * [POS]: Web 应用配置入口，Vercel 使用原生产物，自托管使用 standalone
  *
  * [PROTOCOL]:
  * 1. 运行时、构建输出或 package 转译变化时更新此 Header。

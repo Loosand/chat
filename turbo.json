@@ -6,7 +6,13 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "env": ["DATABASE_URL", "JOB_DRIVER", "REDIS_URL", "STORAGE_DRIVER"],
+      "env": [
+        "DATABASE_URL",
+        "JOB_DRIVER",
+        "REDIS_URL",
+        "STORAGE_DRIVER",
+        "VERCEL"
+      ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
