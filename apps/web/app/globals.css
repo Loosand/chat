@@ -1,0 +1,68 @@
+/**
+ * [INPUT]: Tailwind CSS v4、@repo/design-system 语义 token 与 Web 页面元素
+ * [OUTPUT]: apps/web 的全局样式和最小首页布局
+ * [POS]: Web 样式入口，负责源码扫描并组合共享样式
+ *
+ * [PROTOCOL]:
+ * 1. 扫描范围或页面级布局变化时更新此 Header。
+ * 2. 共享 token 和 primitive 样式应修改 design-system，而不是在此复制。
+ */
+
+@import "tailwindcss";
+@import "@repo/design-system/styles/globals.css";
+@source "../../../packages/design-system/src";
+
+.page-shell {
+  width: min(72rem, calc(100% - 2rem));
+  padding: 7rem 0 4rem;
+  margin: 0 auto;
+}
+
+.hero {
+  max-width: 48rem;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(3rem, 9vw, 7rem);
+  font-weight: 650;
+  line-height: 0.9;
+  letter-spacing: -0.07em;
+}
+
+.eyebrow {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  font-weight: 650;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.lede {
+  margin: 2rem 0 0;
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.75;
+  color: var(--muted-foreground);
+}
+
+.panel-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 4rem;
+}
+
+.panel-grid ul {
+  padding-left: 1.25rem;
+  margin: 0;
+}
+
+.panel-grid li + li {
+  margin-top: 0.5rem;
+}
+
+@media (min-width: 48rem) {
+  .panel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

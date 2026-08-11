@@ -1,0 +1,19 @@
+{
+  "name": "@repo/database",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.2",
+    "postgres": "^3.4.7"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}

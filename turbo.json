@@ -1,0 +1,25 @@
+{
+  "$schema": "https://turborepo.com/schema.json",
+  "ui": "tui",
+  "envMode": "strict",
+  "globalDependencies": [".env"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "env": ["DATABASE_URL", "JOB_DRIVER", "REDIS_URL", "STORAGE_DRIVER"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "dev": {
+      "cache": false,
+      "env": ["DATABASE_URL", "JOB_DRIVER", "REDIS_URL", "STORAGE_DRIVER"],
+      "persistent": true
+    },
+    "test": {
+      "dependsOn": ["^test"]
+    },
+    "typecheck": {
+      "dependsOn": ["^typecheck"],
+      "outputs": ["*.tsbuildinfo"]
+    }
+  }
+}
