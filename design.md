@@ -75,7 +75,7 @@ flowchart TB
 | `storage` | Blob/S3/Local 对象边界 | 不决定文件业务状态 |
 | `jobs` | job name、payload、driver contract | 不导出具体 Trigger task 实现 |
 | `logger` | 结构化日志与未来 trace 装配 | 不替代审计和账本事实 |
-| `design-system` | shadcn/ui Base Nova、Base UI primitive、token 和基础样式 | 不包含聊天业务状态，不混用 Radix-only primitive |
+| `design-system` | Base Rhea、Base UI、Chat primitives、Streamdown、token 和基础样式 | 不包含聊天业务状态，不混用 Radix-only primitive |
 
 业务增长后再按实际依赖新增 `auth`、`model-router`、`chat`、`billing`、`files`、`rag`、`tools`、`media`、`moderation` 和 `trigger`；不提前创建空包。
 
@@ -101,10 +101,19 @@ M0 已实现 Web 构建 profile 分离：Vercel 检测到系统变量 `VERCEL=1`
 ## 界面基线
 
 - 中性、清楚、克制，优先信息层级和状态，不使用无语义渐变、发光或毛玻璃。
-- 默认使用 `@repo/design-system` 中仓库自有的 shadcn/ui + Base UI primitive 和语义 token。
+- 默认使用 `@repo/design-system` 中仓库自有的 Base Rhea + Base UI primitive 和语义 token。
 - Server Component 优先；交互、浏览器 API 或客户端状态才使用 Client Component。
 - 页面保持单一 `h1`，键盘、焦点、对比度和响应式属于完成标准。
 - 危险操作需要明确确认，错误不暴露凭证、上游原文或内部堆栈。
+
+## 前端渲染基线
+
+已实现预备层：shadcn Message/Bubble/Attachment/Marker、`@shadcn/react/message-scroller`、`@ai-sdk/react` 依赖和最小 `StreamingMarkdown`。聊天页面、typed UIMessage part registry、SSE Route Handler、持久化与刷新恢复仍为规划。
+
+- Assistant 文本统一进入 Streamdown；代码与 Mermaid 插件按内容动态加载。
+- MessageScroller 负责滚动和锚点，不持有聊天状态。
+- AI Elements 不作为 Base UI 项目的基础依赖；工具、reasoning、来源和媒体按 typed part 自有组合。
+- 完整边界、状态和延迟依赖见 [`docs/architecture/frontend-stack.md`](./docs/architecture/frontend-stack.md)。
 
 ## 架构变更协议
 

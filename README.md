@@ -26,6 +26,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 - Next.js 16 + React 19 的 `apps/web` 最小页面。
 - TypeScript strict、Biome、Vitest 基础配置。
 - contracts、AI、database、cache、storage、jobs、logger、design-system 和共享配置 package 骨架。
+- shadcn/ui Base Rhea + Base UI Chat primitives 与最小 Streamdown 渲染基线；尚未接入真实聊天流。
 - 分形文档协议及两份 DEEIX 研究基线。
 - 指向 `apps/web` 的 Vercel 一键部署入口。
 
@@ -43,10 +44,10 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 | --- | --- |
 | Monorepo | Bun 1.3、Turborepo |
 | Web | Next.js 16 App Router、React 19、Node.js runtime |
-| AI | AI SDK 7；provider 与路由待实现 |
+| AI | AI SDK 7、`@ai-sdk/react` 4 已预备；provider、传输与路由待实现 |
 | Data | Drizzle/PostgreSQL 为目标主线；当前只有连接边界 |
 | Jobs | 可插拔 JobDriver；Trigger.dev 可选，当前只有 contract |
-| UI | Tailwind CSS v4、shadcn/ui Base Nova、Base UI、共享 design-system |
+| UI | Tailwind CSS v4、shadcn/ui Base Rhea、Base UI、`@shadcn/react`、Streamdown |
 | Quality | TypeScript strict、Biome、Vitest |
 
 ## 项目地图
@@ -63,12 +64,12 @@ packages/
 ├── storage/               # 对象存储 contract
 ├── jobs/                  # 后台任务 driver contract
 ├── logger/                # 结构化日志 contract
-├── design-system/         # shadcn/ui + Base UI 与语义主题
+├── design-system/         # Base Rhea、Chat primitives、Streamdown 与语义主题
 ├── next-config/           # Next.js 共享配置
 └── typescript-config/     # TypeScript 共享配置
 
 docs/
-├── architecture/          # 架构规则
+├── architecture/          # 前端技术基线与架构规则
 ├── DEEIX_FEATURE_INVENTORY.zh-CN.md
 └── DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md
 ```
@@ -97,6 +98,7 @@ bun run build
 ## 设计与研究入口
 
 - [当前设计基线](./design.md)
+- [前端技术基线](./docs/architecture/frontend-stack.md)
 - [DEEIX 功能全量清单](./docs/DEEIX_FEATURE_INVENTORY.zh-CN.md)
 - [DEEIX 等价复刻与目标技术方案](./docs/DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md)
 - [分形文档结构指南](./docs/architecture/fractal-documentation-guide.md)

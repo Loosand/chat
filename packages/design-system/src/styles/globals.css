@@ -1,12 +1,22 @@
 /**
- * [INPUT]: Tailwind CSS v4、shadcn Base Nova token、浏览器配色偏好与语义类名
- * [OUTPUT]: shadcn/ui 主题映射、全局 reset 和 Panel primitive 样式
- * [POS]: @repo/design-system 的共享主题事实源，服务 Base UI 组件与 Web 页面
+ * [INPUT]: Tailwind CSS v4、shadcn Base Rhea、Streamdown、KaTeX 与浏览器配色偏好
+ * [OUTPUT]: Chat primitive 工具类、流式 Markdown 样式、主题映射和全局 reset
+ * [POS]: @repo/design-system 的共享主题事实源，服务 Base UI、聊天组件与 Web 页面
  *
  * [PROTOCOL]:
  * 1. token 或 primitive 样式变化时更新此 Header。
  * 2. 修改后同步 styles/.folder.md 和 design.md。
  */
+
+@import "shadcn/tailwind.css";
+@import "streamdown/styles.css";
+@import "katex/dist/katex.min.css";
+
+@source "../../../../node_modules/streamdown/dist/*.js";
+@source "../../../../node_modules/@streamdown/code/dist/*.js";
+@source "../../../../node_modules/@streamdown/cjk/dist/*.js";
+@source "../../../../node_modules/@streamdown/math/dist/*.js";
+@source "../../../../node_modules/@streamdown/mermaid/dist/*.js";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -36,6 +46,8 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
   --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 :root {
