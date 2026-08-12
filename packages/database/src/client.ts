@@ -1,6 +1,6 @@
 /**
  * [INPUT]: PostgreSQL 连接字符串
- * [OUTPUT]: 带聊天 schema 的 Drizzle database、postgres client 与显式 close 方法
+ * [OUTPUT]: 带聊天与认证 schema 的 Drizzle database、postgres client 与显式 close 方法
  * [POS]: @repo/database 的惰性 PostgreSQL 连接工厂
  *
  * [PROTOCOL]:
@@ -10,9 +10,19 @@
 
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { account, session, user, verification } from "./auth-schema";
 import { chatRunEvents, chatRuns, conversations, messages } from "./schema";
 
-const schema = { chatRunEvents, chatRuns, conversations, messages };
+const schema = {
+  account,
+  chatRunEvents,
+  chatRuns,
+  conversations,
+  messages,
+  session,
+  user,
+  verification,
+};
 
 export function createDatabase(connectionString: string) {
   const client = postgres(connectionString);

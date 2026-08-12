@@ -28,7 +28,8 @@ flowchart TB
 
   AI["@repo/ai"] --> Contracts
   Chat["@repo/chat"] --> Contracts
-  Database["@repo/database"]
+  Auth["@repo/auth"] --> Contracts
+  Auth --> Database["@repo/database"]
   Cache["@repo/cache"]
   Storage["@repo/storage"]
   Jobs["@repo/jobs"] --> Contracts
@@ -71,6 +72,7 @@ flowchart TB
 | --- | --- | --- |
 | `contracts` | 公共 Zod schema、稳定类型和错误码 | 不依赖框架或基础设施 |
 | `chat` | 会话/message/run 领域模型、状态机、ports 和应用服务 | 不依赖 Web、AI SDK、Drizzle、Redis 或任务实现 |
+| `auth` | Better Auth 功能配置、Drizzle adapter、server/client factory 与 OwnerId 映射 | 不向领域泄漏 session/plugin 类型，不在 import 阶段读取环境或连接数据库 |
 | `ai` | AI SDK、provider 与协议适配 | 不访问数据库、计费或任务系统 |
 | `database` | Drizzle、migration、repository adapter | 不依赖 Web 组件 |
 | `cache` | Redis/Upstash/Memory primitive | 不承载业务规则 |
@@ -79,7 +81,7 @@ flowchart TB
 | `logger` | 结构化日志与未来 trace 装配 | 不替代审计和账本事实 |
 | `design-system` | Base Rhea、Base UI、Chat primitives、Streamdown、token 和基础样式 | 不包含聊天业务状态，不混用 Radix-only primitive |
 
-业务增长后再按实际依赖新增 `auth`、`model-router`、`billing`、`files`、`rag`、`tools`、`media`、`moderation` 和 `trigger`；不提前创建空包。`chat` 已因 Goal 1 的领域状态与 ports 建立真实职责。
+业务增长后再按实际依赖新增 `model-router`、`billing`、`files`、`rag`、`tools`、`media`、`moderation` 和 `trigger`；不提前创建空包。`chat` 已因 Goal 1 的领域状态与 ports 建立真实职责，`auth` 已因 Goal 2 的 Better Auth 组合和身份映射建立真实职责。
 
 ## 数据与运行状态
 
@@ -93,9 +95,9 @@ flowchart TB
 - Vercel Blob、S3-compatible、Local filesystem 通过 ObjectStore port 接入。
 - 所有 run、route、usage、price 和 provider identity 保存不可变快照。
 
-## 身份边界（规划）
+## 身份边界（部分实现）
 
-Goal 2 默认采用 Better Auth + Drizzle adapter；邮箱/密码、邮箱验证、数据库 session 与 Admin plugin 构成首期，其他插件分期启用。聊天领域只接收稳定字符串 `OwnerId`，不依赖 Better Auth 类型；Vercel 和 Docker 共享 auth schema 与版本化 migration。完整规则见 [`docs/architecture/auth.md`](./docs/architecture/auth.md)。
+Goal 2 已固定 Better Auth 1.6 + Drizzle adapter，提交邮箱/密码、邮箱验证、数据库 session、Admin plugin 的统一生成/运行配置、server/client factory、`OwnerId` 映射、四张认证表与追加 migration。聊天领域只接收稳定字符串 `OwnerId`，不依赖 Better Auth 类型；Vercel 和 Docker 共享 auth schema 与版本化 migration。Next.js Route Handler、生产邮件 adapter、登录/session 权限集成测试仍待下一个功能。完整规则见 [`docs/architecture/auth.md`](./docs/architecture/auth.md)。
 
 ## 部署
 

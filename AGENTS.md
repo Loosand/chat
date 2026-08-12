@@ -20,6 +20,7 @@ Chat 是一个从简开始的多模型聊天平台 Monorepo。当前只包含可
 - `apps/web` 是 Next.js App Router 的产品入口；默认使用 Server Component，只有交互或浏览器 API 需要时才使用 Client Component。
 - `packages/contracts` 不依赖框架或基础设施。
 - `packages/chat` 只包含聊天领域模型、状态机、ports 和应用服务，不依赖 Web、AI SDK、Drizzle、Redis 或任务实现。
+- `packages/auth` 只组合 Better Auth、Drizzle auth adapter、插件和身份映射；不得把 Better Auth 类型传入聊天领域，也不得在 import 阶段读取环境或连接数据库。
 - `packages/ai` 只封装 AI SDK 和 provider adapter，不访问数据库、缓存、任务系统或 Next.js。
 - `packages/database`、`cache`、`storage` 是基础设施 adapter，不依赖 Web。
 - `packages/jobs` 只定义任务 contract/driver；以后接入 Trigger.dev 时，Web 不得导入 task 实现。

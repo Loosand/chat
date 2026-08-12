@@ -8,6 +8,13 @@
       "when": 1786541740564,
       "tag": "0000_massive_king_cobra",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786545395176,
+      "tag": "0001_wandering_toro",
+      "breakpoints": true
     }
   ]
 }

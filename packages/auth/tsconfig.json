@@ -1,0 +1,7 @@
+{
+  "extends": "@repo/typescript-config/base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo"
+  },
+  "include": ["auth.config.ts", "scripts/**/*.ts", "src/**/*.ts"]
+}

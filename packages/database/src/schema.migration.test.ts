@@ -37,7 +37,11 @@ describe("chat core migration", () => {
 
   it("creates the four chat fact tables", async () => {
     const result = await client.query<{ tablename: string }>(
-      "select tablename from pg_tables where schemaname = 'public' order by tablename"
+      `select tablename
+       from pg_tables
+       where schemaname = 'public'
+         and tablename in ('chat_run_events', 'chat_runs', 'conversations', 'messages')
+       order by tablename`
     );
 
     expect(result.rows.map((row) => row.tablename)).toEqual([

@@ -1,6 +1,6 @@
 # Chat
 
-Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**：聊天领域、PostgreSQL schema/migration 和事务化 repository 已建立；身份、模型调用和 Web 聊天竖切进入后续 Goal。
+Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**，正在实施 Goal 2；Better Auth 身份组合、认证 schema/migration 与 OwnerId 边界已落地，Web 鉴权挂载、模型调用和聊天竖切仍在继续。
 
 ## 一键部署
 
@@ -28,6 +28,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 - contracts、AI、database、cache、storage、jobs、logger、design-system 和共享配置 package 骨架。
 - `@repo/chat` 领域模型、repository ports、应用服务与显式 run 状态机。
 - PostgreSQL/Drizzle 四张聊天事实表、版本化 migration、事务化 repository、幂等/CAS/owner 隔离与真实 PostgreSQL 语义集成测试。
+- Better Auth 1.6 + Drizzle/Admin 首期配置、server/client factory、生成式四表 auth schema、追加 migration 与稳定 OwnerId 映射。
 - shadcn/ui Base Rhea + Base UI Chat primitives 与最小 Streamdown 渲染基线；尚未接入真实聊天流。
 - 分形文档协议及两份 DEEIX 研究基线。
 - 指向 `apps/web` 的 Vercel 一键部署入口。
@@ -35,7 +36,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 
 尚未实现：
 
-- Better Auth、HTTP/streaming composition 和真实模型聊天流。
+- Better Auth Web Route Handler、真实邮件发送/认证流程、HTTP/streaming composition 和真实模型聊天流。
 - 模型 provider、路由、熔断和上游调试。
 - Trigger.dev/BullMQ worker。
 - 文件、RAG、MCP、媒体、计费和管理后台。
@@ -62,6 +63,7 @@ apps/
 packages/
 ├── contracts/             # 无框架公共 contract
 ├── chat/                  # 聊天领域、状态机、ports 与应用服务
+├── auth/                  # Better Auth 配置、身份映射和 server/client factory
 ├── ai/                    # AI SDK 边界
 ├── database/              # PostgreSQL schema、migration 与 repository
 ├── cache/                 # 缓存/事件 primitive contract
