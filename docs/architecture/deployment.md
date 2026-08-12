@@ -44,7 +44,7 @@ docker build --target runner -t chat:local .
 docker run --rm -p 3000:3000 chat:local
 ```
 
-`.github/workflows/ci.yml` 在 Linux 上重放全仓检查与 Vercel profile build，并用 BuildKit 真正构建 `runner` target；不登录 registry，也不 push image。它是 Dockerfile 变更的必需合并门禁。
+`.github/workflows/ci.yml` 在 Linux 上重放全仓检查与 Vercel profile build，并用 BuildKit 矩阵真正构建 `runner`、`migrate` 两个发布 target；不登录 registry，也不 push image。它是 Dockerfile 变更的必需合并门禁。
 
 ## 当前能力矩阵
 

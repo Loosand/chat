@@ -30,6 +30,9 @@ jobs:
   docker:
     needs: quality
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [runner, migrate]
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
@@ -37,5 +40,5 @@ jobs:
         with:
           context: .
           push: false
-          tags: chat:ci
-          target: runner
+          tags: chat:${{ matrix.target }}-ci
+          target: ${{ matrix.target }}
