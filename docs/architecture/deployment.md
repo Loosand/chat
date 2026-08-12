@@ -1,7 +1,7 @@
 # Deployment Profiles
 
-> 代码源头：`packages/next-config/src/index.ts`、`Dockerfile`、`compose.yaml`
-> 状态：Vercel 原生构建、Docker standalone image、显式 migration、Compose 与 Better Auth HTTP/邮件配置已实现；聊天 HTTP/API composition 尚属 Goal 2 后续功能。
+> 代码源头：`packages/next-config/src/index.ts`、`Dockerfile`、`compose.yaml`、`apps/web/server/model-bootstrap.ts`
+> 状态：Vercel 原生构建、Docker standalone image、显式 migration、Compose、Better Auth 与聊天 HTTP composition、单模型环境 bootstrap 已实现。
 
 ## 共同原则
 
@@ -16,9 +16,9 @@
 
 仓库的一键部署按钮把 Root Directory 设为 `apps/web`。Vercel 提供 `VERCEL=1` 时，`@repo/next-config` 保留平台原生 Next.js 输出，避免把自托管 `standalone` 追踪产物交给平台构建器。
 
-静态首页构建无需环境变量；认证 API 首次请求要求 `DATABASE_URL`、`BETTER_AUTH_SECRET`、`RESEND_API_KEY` 和 `AUTH_EMAIL_FROM`。Vercel Production/Preview 可从平台系统变量推导精确 Better Auth URL，显式 `BETTER_AUTH_URL` 优先。Deploy Button 已要求四个不可推导值，但仍不能自动安全执行未知数据库 migration；数据库建议通过 Marketplace/Neon 创建，migration 由受控发布任务执行，不能由每个 Function 冷启动竞争。
+静态首页构建无需环境变量；认证 API 首次请求要求 `DATABASE_URL`、`BETTER_AUTH_SECRET`、`RESEND_API_KEY` 和 `AUTH_EMAIL_FROM`。首个真实聊天模型可再提供 `CHAT_MODEL_PROVIDER`、`CHAT_MODEL_NAME` 和 `CHAT_MODEL_API_KEY`。Vercel Production/Preview 可从平台系统变量推导精确 Better Auth URL，显式 `BETTER_AUTH_URL` 优先。Deploy Button 要求这些不可推导值，但仍不能自动安全执行未知数据库 migration；数据库建议通过 Marketplace/Neon 创建，migration 由受控发布任务执行，不能由每个 Function 冷启动竞争。
 
-Resend 可通过 Vercel Marketplace 安装以自动提供 `RESEND_API_KEY`，也可手工配置；`AUTH_EMAIL_FROM` 必须属于已验证域名。认证 callback 把发送 Promise 注册给 Next.js `after()`，因此在 Vercel 与 Docker 都能响应后续命。认证限流使用 PostgreSQL `rate_limit` 表，在多 Function/多实例间一致且不强制 Redis。
+Resend 可通过 Vercel Marketplace 安装以自动提供 `RESEND_API_KEY`，也可手工配置；`AUTH_EMAIL_FROM` 必须属于已验证域名。认证 callback 把发送 Promise 注册给 Next.js `after()`，因此在 Vercel 与 Docker 都能响应后续命。认证限流使用 PostgreSQL `rate_limit` 表，在多 Function/多实例间一致且不强制 Redis。`CHAT_MODEL_API_KEY` 是无 `NEXT_PUBLIC_` 前缀的 server-only secret，建议在 Dashboard 标为 Sensitive 并分别限定 Production/Preview；Vercel profile 不允许私网上游。
 
 数据库连接池按实例限制：Vercel 默认 `max=1`，Docker/本地默认 `max=5`；`DATABASE_POOL_MAX` 可在 1–20 之间显式覆盖。使用 Neon 时优先填 pooled connection URL，避免 Function 扩容时把直连数乘上实例数。
 
@@ -43,6 +43,9 @@ BETTER_AUTH_SECRET="$(openssl rand -base64 32)" \
 BETTER_AUTH_URL='http://localhost:3000' \
 RESEND_API_KEY='replace-me' \
 AUTH_EMAIL_FROM='Chat <auth@example.com>' \
+CHAT_MODEL_PROVIDER='openai' \
+CHAT_MODEL_NAME='your-model-id' \
+CHAT_MODEL_API_KEY='replace-me' \
 docker compose up --build
 ```
 
@@ -63,7 +66,9 @@ docker run --rm -p 3000:3000 chat:local
 | --- | --- | --- |
 | Next.js 页面 | 已构建 | 已构建 |
 | PostgreSQL schema | 外部数据库 + 显式 migration | Compose PostgreSQL + migrate service |
-| Chat repository | 已实现，Goal 2 接入 Web | 已实现，Goal 2 接入 Web |
+| Chat repository | 已接入 Web | 已接入 Web |
+| Chat HTTP/SSE/cancel | 已实现 | 已实现 |
+| 单文本模型 bootstrap | `CHAT_MODEL_*`，公网目标 | `CHAT_MODEL_*`，可显式允许私网目标 |
 | Better Auth API | 外部 PostgreSQL + Resend | Compose PostgreSQL + Resend |
 | Auth rate limit | PostgreSQL | PostgreSQL |
 | Redis/实时 replay | 未实现 | 未实现 |

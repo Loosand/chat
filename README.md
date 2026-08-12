@@ -1,12 +1,12 @@
 # Chat
 
-Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**，正在实施 Goal 2；生产认证、四层模型目录、首批 AI SDK 文本 adapter、可替换 chat run 执行器及 HTTP/刷新恢复竖切已落地，模型 bootstrap 与最薄前端仍在继续。
+Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**，正在实施 Goal 2；生产认证、四层模型目录、首批 AI SDK 文本 adapter、可替换 chat run 执行器、HTTP/刷新恢复及单模型环境 bootstrap 已落地，最薄前端仍在继续。
 
 ## 一键部署
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLoosand%2Fchat&project-name=chat&repository-name=chat&root-directory=apps%2Fweb&env=DATABASE_URL,BETTER_AUTH_SECRET,RESEND_API_KEY,AUTH_EMAIL_FROM&envDescription=PostgreSQL%E3%80%81Better+Auth+%E4%B8%8E+Resend+%E6%98%AF%E6%B3%A8%E5%86%8C%E7%99%BB%E5%BD%95%E5%BF%85%E9%9C%80%E9%85%8D%E7%BD%AE%E3%80%82BETTER_AUTH_SECRET+%E8%AF%B7%E4%BD%BF%E7%94%A8+openssl+rand+-base64+32+%E7%94%9F%E6%88%90%EF%BC%9B%E9%83%A8%E7%BD%B2%E5%90%8E%E6%98%BE%E5%BC%8F%E8%BF%90%E8%A1%8C%E6%95%B0%E6%8D%AE%E5%BA%93+migration%E3%80%82&envLink=https%3A%2F%2Fgithub.com%2FLoosand%2Fchat%23%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLoosand%2Fchat&project-name=chat&repository-name=chat&root-directory=apps%2Fweb&env=DATABASE_URL,BETTER_AUTH_SECRET,RESEND_API_KEY,AUTH_EMAIL_FROM,CHAT_MODEL_PROVIDER,CHAT_MODEL_NAME,CHAT_MODEL_API_KEY&envDescription=PostgreSQL%E3%80%81Better+Auth%E3%80%81Resend+%E4%B8%8E%E9%A6%96%E4%B8%AA%E6%96%87%E6%9C%AC%E6%A8%A1%E5%9E%8B%E3%80%82BETTER_AUTH_SECRET+%E8%AF%B7%E7%94%A8+openssl+rand+-base64+32+%E7%94%9F%E6%88%90%EF%BC%9BCHAT_MODEL_PROVIDER+%E5%8F%AF%E5%A1%AB+openai%2Fanthropic%2Fgoogle%2Fxai%2Fopenrouter%E3%80%82%E9%83%A8%E7%BD%B2%E5%90%8E%E4%BB%8D%E9%9C%80%E6%98%BE%E5%BC%8F%E8%BF%90%E8%A1%8C%E6%95%B0%E6%8D%AE%E5%BA%93+migration%E3%80%82&envLink=https%3A%2F%2Fgithub.com%2FLoosand%2Fchat%23%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F)
 
-按钮已预设 Monorepo Root Directory 为 `apps/web`，并要求填写当前认证运行所需的 PostgreSQL、Better Auth 与 Resend 配置。Vercel 使用 Next.js 原生部署产物，非 Vercel 构建保留 Docker 所需的 standalone 输出。数据库 migration 仍需在受控发布步骤显式执行，不在 Function 冷启动时自动运行。
+按钮已预设 Monorepo Root Directory 为 `apps/web`，并要求填写认证运行与首个文本模型所需的 PostgreSQL、Better Auth、Resend 和 `CHAT_MODEL_*` 配置。Vercel 使用 Next.js 原生部署产物，非 Vercel 构建保留 Docker 所需的 standalone 输出。数据库 migration 仍需在受控发布步骤显式执行，不在 Function 冷启动时自动运行。
 
 ## 核心同步协议（Mandatory）
 
@@ -33,6 +33,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 - `@repo/ai` 的 OpenAI Responses/Chat、OpenRouter Chat、Anthropic Messages、Google Generate Content、xAI Responses 与 generic OpenAI-compatible 文本 adapter；精确 endpoint contract、零隐式重试和稳定 usage 归一化。
 - `@repo/chat-engine` 的单 route 执行编排、无密钥 route snapshot、历史转换、AI SDK event 消费、周期 checkpoint、数据库取消监察与安全终态。
 - `apps/web` 的 owner-scoped conversation/model/run API、可信 Origin/有限 body、防 mass assignment、`after()` 调度、PostgreSQL checkpoint SSE、刷新 snapshot 与显式取消。
+- `CHAT_MODEL_*` 的单文本模型 bootstrap：并发可恢复地补齐四层目录，只持久化环境 secret reference，既有配置冲突时不自动覆盖。
 - `@repo/network-security` 的共享 URL/DNS policy 与 Node 连接时 pinned lookup；provider 请求限定同源/base-path 并禁止自动 redirect。
 - shadcn/ui Base Rhea + Base UI Chat primitives 与最小 Streamdown 渲染基线；尚未接入真实聊天流。
 - 分形文档协议及两份 DEEIX 研究基线。
@@ -41,7 +42,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 
 尚未实现：
 
-- 认证/聊天 UI、模型 bootstrap/管理入口和端到端真实 provider 验收。
+- 认证/聊天 UI、模型管理入口和端到端真实 provider 验收。
 - 模型管理 HTTP/UI、剩余文本/媒体协议、加权/failover、熔断和上游调试。
 - Trigger.dev/BullMQ worker。
 - 文件、RAG、MCP、媒体、计费和管理后台。
@@ -119,6 +120,11 @@ bun run dev
 | `AUTH_EMAIL_FROM` | 是 | 已验证发件人，例如 `Chat <auth@example.com>` |
 | `BETTER_AUTH_TRUSTED_ORIGINS` | 否 | 额外精确 origin，逗号分隔；不接受 wildcard |
 | `BETTER_AUTH_ADMIN_USER_IDS` | 否 | 预置管理员 UUID，逗号分隔；也可在数据库受控赋予 `admin` role |
+| `CHAT_MODEL_PROVIDER` | 真实聊天是 | 首模型 provider：`openai`、`anthropic`、`google`、`xai`、`openrouter` 或 `openai-compatible` |
+| `CHAT_MODEL_NAME` | 真实聊天是 | 上游模型 ID；不在仓库维护会过期的模型名枚举 |
+| `CHAT_MODEL_API_KEY` | 官方 provider 是 | server-only API key；数据库只保存变量名引用，OpenAI-compatible 可不填 |
+| `CHAT_MODEL_BASE_URL` | 自定义上游是 | 覆盖 preset；OpenAI-compatible 必填 |
+| 其他 `CHAT_MODEL_*` | 否 | protocol、平台 key/展示名/system prompt 和 Docker 私网开关，见模型 bootstrap 文档 |
 
 复制 `.env.example` 后填值。schema 不会在 Web 进程启动时自动迁移：本地/受控发布使用 `bun run --cwd packages/database db:migrate`，Compose 由独立 `migrate` service 执行。
 
@@ -145,6 +151,7 @@ POSTGRES_PASSWORD='replace-with-a-url-safe-secret' docker compose up --build
 - [聊天执行架构](./docs/architecture/chat-execution.md)
 - [聊天 HTTP 与恢复](./docs/architecture/chat-http.md)
 - [模型目录架构](./docs/architecture/model-catalog.md)
+- [首模型部署 Bootstrap](./docs/architecture/model-bootstrap.md)
 - [Vercel 与 Docker 部署](./docs/architecture/deployment.md)
 - [前端技术基线](./docs/architecture/frontend-stack.md)
 - [DEEIX 功能全量清单](./docs/DEEIX_FEATURE_INVENTORY.zh-CN.md)

@@ -30,9 +30,14 @@ import type {
   RunId,
   RunSnapshotResource,
 } from "@repo/contracts";
-import type { PublicPlatformModel } from "@repo/model-router";
+import type {
+  ModelCatalogError,
+  PublicPlatformModel,
+} from "@repo/model-router";
+import { isModelCatalogError } from "@repo/model-router";
 import { ZodError, type ZodType } from "zod";
 import { getAuthenticatedOwnerId } from "./auth";
+import { isModelBootstrapError } from "./model-bootstrap";
 
 const defaultMaximumBodyBytes = 128 * 1024;
 const unsignedIntegerPattern = /^\d+$/;
@@ -250,10 +255,45 @@ function mapChatHttpError(error: unknown): ChatHttpError {
       "Chat persistence is temporarily unavailable."
     );
   }
+  if (isModelBootstrapError(error)) {
+    return new ChatHttpError(
+      error.code === "configuration_conflict" ? 409 : 503,
+      `model_bootstrap_${error.code}`,
+      error.message
+    );
+  }
+  if (isModelCatalogError(error)) {
+    return mapModelCatalogHttpError(error);
+  }
   return new ChatHttpError(
     500,
     "internal_error",
     "An internal error occurred."
+  );
+}
+
+function mapModelCatalogHttpError(error: ModelCatalogError): ChatHttpError {
+  if (error.code === "catalog_not_found") {
+    return new ChatHttpError(404, error.code, error.message);
+  }
+  if (
+    error.code === "catalog_conflict" ||
+    error.code === "catalog_record_referenced" ||
+    error.code === "concurrent_catalog_update" ||
+    error.code === "route_topology_not_supported"
+  ) {
+    return new ChatHttpError(409, error.code, error.message);
+  }
+  if (
+    error.code === "invalid_network_target" ||
+    error.code === "no_route_available"
+  ) {
+    return new ChatHttpError(422, error.code, error.message);
+  }
+  return new ChatHttpError(
+    503,
+    "model_catalog_unavailable",
+    "The model catalog is temporarily unavailable."
   );
 }
 

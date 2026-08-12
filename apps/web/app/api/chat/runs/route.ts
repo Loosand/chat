@@ -1,5 +1,5 @@
 /**
- * [INPUT]: 认证 POST、可信 Origin 与 strict text run JSON
+ * [INPUT]: 认证 POST、可信 Origin、可选模型 readiness 与 strict text run JSON
  * [OUTPUT]: 201/200 PreparedRunResource，并为新 run 注册 request-lifetime background execution
  * [POS]: `/api/chat/runs` collection Route Handler
  * [DOC]: docs/architecture/chat-http.md
@@ -33,6 +33,7 @@ export async function POST(request: Request): Promise<Response> {
       requireChatOwner(request),
       parseChatJsonBody(request, createChatRunRequestSchema),
     ]);
+    await chatRuntime.ensureModels();
 
     const prepared = await chatRuntime.chat.prepareRun({
       branchReason: input.branchReason,

@@ -1,7 +1,7 @@
 # Model Catalog
 
 > 代码源头：`packages/contracts/src/model-catalog.ts`、`packages/model-router/src/service.ts`、`packages/model-router/src/network-policy.ts`、`packages/database/src/model-catalog-schema.ts`、`packages/database/src/model-catalog-repository.ts`
-> 状态：Goal 2.3 已实现稳定 contract、四层 PostgreSQL schema/migration、受校验 CRUD/CAS、公开目录、网络目标策略与 fail-closed 单 route 解析；Goal 2.4 已实现首批文本 provider adapter；管理 HTTP/UI 和完整路由引擎尚未实现。
+> 状态：Goal 2.3 已实现稳定 contract、四层 PostgreSQL schema/migration、受校验 CRUD/CAS、公开目录、网络目标策略与 fail-closed 单 route 解析；Goal 2.4 已实现首批文本 provider adapter；Goal 2.6a 已实现单模型环境 bootstrap；管理 HTTP/UI 和完整路由引擎尚未实现。
 > 审计日期：2026-08-12。
 
 ## 决策
@@ -78,9 +78,9 @@ Vercel 与 Docker 继续使用同一套 PostgreSQL schema 和 forward-only migra
 
 多候选明确失败是安全退出条件，不是完整路由策略。它防止 Goal 2 阶段静默选择“第一条”而忽略管理员已经配置的 priority/weight。
 
-## 下一步边界
+## 部署 bootstrap 与下一步边界
 
-Goal 2.4 已提供接受稳定 route 字段和运行时 secret value 的 AI SDK adapter；Goal 2.5 的 `@repo/chat-engine` 已把 `ResolvedModelRoute` 转为模型输入、在运行时解析环境 secret reference，并固定不含 secret value 的 route snapshot。管理 HTTP/UI 留到薄管理界面阶段。以下能力仍属 Goal 3：多 route 选择、priority group 内加权随机、最多三路 failover、key picker、两级 circuit、429 backoff、probe/debug、Vendor、Display Group、权限组和价格。
+Goal 2.4 已提供接受稳定 route 字段和运行时 secret value 的 AI SDK adapter；Goal 2.5 的 `@repo/chat-engine` 已把 `ResolvedModelRoute` 转为模型输入、在运行时解析环境 secret reference，并固定不含 secret value 的 route snapshot。Goal 2.6a 允许 Vercel/Docker 用 `CHAT_MODEL_*` 幂等补齐首条四层 route，且不会把密钥值写入数据库或覆盖已有管理员配置；完整规则见 [`model-bootstrap.md`](./model-bootstrap.md)。管理 HTTP/UI 留到薄管理界面阶段。以下能力仍属 Goal 3：多 route 选择、priority group 内加权随机、最多三路 failover、key picker、两级 circuit、429 backoff、probe/debug、Vendor、Display Group、权限组和价格。
 
 ## 变更协议
 

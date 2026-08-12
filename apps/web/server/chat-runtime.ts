@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 惰性 auth/database runtime、DNS、聊天/目录 repository 与 AI/chat-engine factories
- * [OUTPUT]: Web 进程共享的 ChatService、ModelCatalogService 与 ChatRunManager
+ * [OUTPUT]: Web 进程共享的 ChatService、ModelCatalogService、模型 readiness 与 ChatRunManager
  * [POS]: apps/web 的聊天 server composition root
  * [DOC]: docs/architecture/chat-http.md
  *
@@ -27,9 +27,14 @@ import {
 import { createNetworkTargetPolicy } from "@repo/network-security";
 import { getAuthRuntime } from "./auth";
 import { type ChatRunManager, createChatRunManager } from "./chat-run-manager";
+import {
+  ensureModelBootstrap,
+  parseModelBootstrapConfig,
+} from "./model-bootstrap";
 
 export type ChatRuntime = {
   chat: ReturnType<typeof createChatService>;
+  ensureModels(): Promise<void>;
   models: ReturnType<typeof createModelCatalogService>;
   runs: ChatRunManager;
   trustedOrigins: readonly string[];
@@ -71,12 +76,33 @@ export function getChatRuntime(): ChatRuntime {
     modelRoutes: models,
     secrets: createEnvironmentSecretResolver(process.env),
   });
+  const ensureModels = createModelBootstrapReadiness(models);
 
   runtime = {
     chat,
+    ensureModels,
     models,
     runs: createChatRunManager(executor),
     trustedOrigins: authRuntime.trustedOrigins,
   };
   return runtime;
+}
+
+function createModelBootstrapReadiness(
+  models: ReturnType<typeof createModelCatalogService>
+): () => Promise<void> {
+  let readiness: Promise<void> | undefined;
+  return () => {
+    if (!readiness) {
+      readiness = Promise.resolve()
+        .then(() =>
+          ensureModelBootstrap(models, parseModelBootstrapConfig(process.env))
+        )
+        .catch((error) => {
+          readiness = undefined;
+          throw error;
+        });
+    }
+    return readiness;
+  };
 }

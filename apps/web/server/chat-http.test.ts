@@ -17,6 +17,7 @@ import {
   ownerIdSchema,
   runIdSchema,
 } from "@repo/contracts";
+import { ModelCatalogError } from "@repo/model-router";
 import { describe, expect, it } from "vitest";
 import {
   assertTrustedWriteOrigin,
@@ -26,6 +27,7 @@ import {
   toMessageResource,
   toRunResource,
 } from "./chat-http";
+import { ModelBootstrapError } from "./model-bootstrap";
 
 const now = new Date("2026-08-12T02:00:00.000Z");
 const conversationId = conversationIdSchema.parse(
@@ -122,6 +124,33 @@ describe("chat HTTP boundary", () => {
       error: {
         code: "internal_error",
         message: "An internal error occurred.",
+      },
+    });
+  });
+
+  it("maps bootstrap and catalog failures without exposing their causes", async () => {
+    const bootstrap = toChatErrorResponse(
+      new ModelBootstrapError(
+        "invalid_configuration",
+        "The deployment model bootstrap configuration is invalid."
+      )
+    );
+    expect(bootstrap.status).toBe(503);
+    await expect(bootstrap.json()).resolves.toMatchObject({
+      error: { code: "model_bootstrap_invalid_configuration" },
+    });
+
+    const persistence = toChatErrorResponse(
+      new ModelCatalogError(
+        "persistence_failure",
+        "Internal catalog details should not cross the boundary."
+      )
+    );
+    expect(persistence.status).toBe(503);
+    await expect(persistence.json()).resolves.toEqual({
+      error: {
+        code: "model_catalog_unavailable",
+        message: "The model catalog is temporarily unavailable.",
       },
     });
   });

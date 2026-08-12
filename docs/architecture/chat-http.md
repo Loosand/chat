@@ -5,7 +5,7 @@
 
 ## Composition
 
-`getAuthRuntime()` 在首次请求时创建一份 PostgreSQL handle，Better Auth、ChatRepository 和 ModelCatalogRepository 共用该连接池。`getChatRuntime()` 在此之上惰性装配 ChatService、ModelCatalogService、共享 DNS/网络策略、AI SDK generation、chat run executor 和进程内 run manager。模块 import 与 `next build` 都不会解析环境、连接数据库或执行 migration。
+`getAuthRuntime()` 在首次请求时创建一份 PostgreSQL handle，Better Auth、ChatRepository 和 ModelCatalogRepository 共用该连接池。`getChatRuntime()` 在此之上惰性装配 ChatService、ModelCatalogService、共享 DNS/网络策略、AI SDK generation、chat run executor 和进程内 run manager；可选模型 bootstrap 只在模型列表或 run 创建时执行，不会阻断已有会话 snapshot。模块 import 与 `next build` 都不会解析环境、连接数据库或执行 migration。
 
 Vercel Route Handler 通过 Next.js `after()` 托管新/pending run 的 execution promise；Docker standalone 复用相同路径和 schema。`maxDuration=300` 是当前交互 run 的部署预算，不意味着无限长任务；需要超过 Web function 预算的工作以后进入 JobDriver。
 
@@ -43,7 +43,7 @@ SSE 事件固定为：
 
 ## Current limits
 
-- 目前需要管理员先通过后续管理 HTTP/UI 或数据库受控 seed 建立模型目录；一键部署的模型 bootstrap 尚未实现。
+- 可通过 `CHAT_MODEL_*` 自动补齐一个文本模型；多模型仍需要后续管理 HTTP/UI。
 - PostgreSQL polling 没有 Redis pub/sub 的逐 token 延迟；只发送持久 checkpoint。
 - `after()` 不是 durable queue。实例硬终止时已有 checkpoint 可恢复，但自动把僵尸 running 标为 interrupted/重新领取尚未实现。
 - tool/file/multimodal 输入、共享/公开 conversation、列表/归档/编辑/retry UI 与完整 API 均在后续功能。
