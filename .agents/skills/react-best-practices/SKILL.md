@@ -1,5 +1,5 @@
 ---
-name: vercel-react-best-practices
+name: react-best-practices
 description: 来自 Vercel Engineering 的 React 和 Next.js 性能优化指南。此技能应在编写、审查或重构 React/Next.js 代码时使用,以确保最佳性能模式。适用于涉及 React 组件、Next.js 页面、数据获取、bundle 优化或性能改进的任务。
 license: MIT
 metadata:

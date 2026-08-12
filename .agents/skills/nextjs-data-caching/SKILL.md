@@ -4,17 +4,14 @@ description: |
   Next.js 16 数据缓存实战指南。适用于为 Server Action / RSC 数据查询添加缓存时触发。
   涵盖：unstable_cache 包装模式、updateTag 即时失效、React.cache 请求级去重、
   SWR 客户端缓存联动、缓存分层策略、cache tag 设计规范。
-  基于本项目（Higgsfield）的实际缓存实践总结。
-version: 1.0.0
-tools:
-  - Read
-  - Glob
-  - Grep
+  从 Higgsfield 项目的实际缓存实践迁移而来；用于 Chat 时必须先核对当前实现，不得把示例当作已实现能力。
 ---
 
 # Next.js 16 数据缓存实战指南
 
-基于 Higgsfield 项目的实际缓存实践，适用于 Next.js 16+（`unstable_cache` 模式，无需 `cacheComponents`）。
+从 Higgsfield 项目的实际缓存实践迁移而来，适用于 Next.js 16+（`unstable_cache` 模式，无需 `cacheComponents`）。
+
+> **项目适配说明**：下文的认证、数据库、资源名、缓存 tag 和文件索引都是源项目案例，不代表 Chat 当前已经实现这些模块。用于本仓库前，先读取 `README.md`、`design.md`、最近的 `.folder.md` 与实际源码，并按现状改写示例和验证策略。
 
 ## 何时使用本技能
 
@@ -75,7 +72,7 @@ const cachedGetData = React.cache(getData);
 
 ## 缓存分层架构
 
-本项目采用三层缓存：
+源项目案例采用三层缓存：
 
 ```
 ┌─────────────────────────────────────────┐
@@ -245,7 +242,7 @@ async function SidebarLoader() {
 {资源类型}-{scope}[-{子类型}]
 ```
 
-### 项目中的实际 tag
+### 源项目案例中的实际 tag
 
 | Tag 模式 | 示例 | 用途 |
 |----------|------|------|
@@ -351,7 +348,7 @@ function queryByType(userId: string, type: string) {
 
 ---
 
-## 项目缓存文件索引
+## 源项目缓存文件索引（仅作模式参考）
 
 | 文件 | 缓存类型 | Tag |
 |------|----------|-----|

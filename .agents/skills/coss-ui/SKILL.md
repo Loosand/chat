@@ -1,5 +1,5 @@
 ---
-title: Skills
+name: coss-ui
 description: Give your AI assistant deep knowledge of coss ui components, patterns, and best practices.
 ---
 

@@ -1,7 +1,6 @@
 ---
 name: next-best-practices
 description: Next.js 最佳实践 - 文件约定、RSC 边界、数据模式、异步 API、元数据、错误处理、路由处理器、图像/字体优化、打包
-user-invocable: false
 ---
 
 # Next.js 最佳实践

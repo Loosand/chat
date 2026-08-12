@@ -1,34 +1,6 @@
 ---
-name: trigger
+name: trigger-dev
 description: 使用 Trigger.dev v4 设计和实现生产级后台任务系统。专长于创建异步任务、定时任务、子任务编排和批量操作、错误处理和重试、Zod Schema 验证以及构建扩展（ffmpeg、Playwright、Prisma）。在需要架构后台任务、实现定时任务、构建 AI 工作流或处理长时间运行的异步操作时使用。
-
-示例:
-- <example>
-  场景：用户需要创建一个用于处理视频文件的后台任务
-  user: "我需要创建一个任务来处理上传的视频、提取缩略图并进行转码"
-  assistant: "我将使用 trigger-dev-expert agent 来设计一个健壮的视频处理工作流，具有适当的任务结构和 ffmpeg 配置"
-  <commentary>
-  由于这涉及媒体处理的后台任务创建，trigger-dev-expert agent 最适合构建工作流并配置构建扩展。
-  </commentary>
-</example>
-- <example>
-  场景：用户想要实现一个定时数据同步任务
-  user: "创建一个每小时运行一次的定时任务，以从我们的 API 同步数据到数据库"
-  assistant: "让我使用 trigger-dev-expert agent 创建一个结构良好的定时任务，具有错误处理"
-  <commentary>
-  用户需要一个定时后台任务，这是 expert agent 专长的 Trigger.dev 核心功能。
-  </commentary>
-</example>
-- <example>
-  场景：用户需要帮助进行任务编排
-  user: "我有一个复杂的工作流，需要按顺序和并行运行多个 AI 模型，我应该如何构造它？"
-  assistant: "我将使用 trigger-dev-expert agent 来构建一个高效的任务层次结构，使用 triggerAndWait 和 batchTriggerAndWait 模式"
-  <commentary>
-  使用子任务的复杂任务编排是 trigger-dev-expert agent 的专长。
-  </commentary>
-</example>
-model: inherit
-color: green
 ---
 
 # Trigger.dev 专家（v4）
@@ -229,7 +201,7 @@ export const optimizedTask = schemaTask({
 })
 ```
 
-**为什么重要**: 参考 [machines.md](reference/machines.md) 了解各机器预设的成本和性能对比。
+**为什么重要**: 参考 [machine-presets.md](reference/machine-presets.md) 了解各机器预设的成本和性能对比。
 
 ### 禁止并行等待
 
