@@ -1,7 +1,7 @@
 # Chat Core
 
-> 代码源头：`packages/contracts/src/chat.ts`、`packages/chat/src/model.ts`、`packages/chat/src/ports.ts`、`packages/chat/src/run-state-machine.ts`、`packages/chat/src/service.ts`
-> 状态：领域契约、模型、ports、service、run 状态机、PostgreSQL schema 与初始 migration 已实现；repository adapter 仍在 Goal 1 后续功能中实现。
+> 代码源头：`packages/contracts/src/chat.ts`、`packages/chat/src/model.ts`、`packages/chat/src/ports.ts`、`packages/chat/src/run-state-machine.ts`、`packages/chat/src/service.ts`、`packages/database/src/chat-repository.ts`
+> 状态：领域契约、模型、ports、service、run 状态机、PostgreSQL schema/migration 与 repository adapter 已实现。
 
 ## 边界
 
@@ -64,7 +64,7 @@ stateDiagram-v2
 
 ## Checkpoint 与并发
 
-运行中的 assistant checkpoint 使用 run `version` 乐观并发。每次成功 checkpoint 原子更新消息内容、usage、version、`lastEventSequence` 并写 `message.checkpoint`；版本不一致返回 `concurrent_run_update`，调用者重新读取后决定重试。PostgreSQL 保存重要 checkpoint/event，不永久保存每个 token delta。
+运行中的 assistant checkpoint 使用 run `version` 乐观并发。每次成功 checkpoint 原子更新消息内容、usage、version、`lastEventSequence` 并写 `message.checkpoint`；版本不一致返回 `concurrent_run_update`，调用者重新读取后决定重试。PostgreSQL 保存重要 checkpoint/event，不永久保存每个 token delta。adapter 将未知数据库/映射失败收敛为不包含 SQL 或约束详情的 `persistence_failure`。
 
 ## PostgreSQL schema
 
@@ -77,9 +77,14 @@ stateDiagram-v2
 
 数据库用 check 约束稳定枚举和长度，用复合外键禁止跨 conversation 消息父子关系、跨 conversation run 消息和跨 owner run，用 `ON DELETE SET NULL` 处理 active leaf，用 `RESTRICT` 保留仍被 run 或子消息引用的事实。初始 migration 通过 PGlite 的 PostgreSQL 内核从零执行并验证约束；生产数据库只允许显式运行版本化 migration。
 
+## Repository adapter
+
+`createDrizzleChatRepository()` 面向通用 Drizzle PostgreSQL database，因此生产 `postgres-js` 与测试 PGlite 共享一套实现。turn 创建、checkpoint 和状态转换分别在单个事务中完成；所有 run 更新同时写 assistant 状态和递增 sequence 的重要事件。`(ownerId, clientRunId)` 的唯一冲突在事务回滚后读取既有事实，返回 `created=false`。
+
+所有读取把 owner 纳入查询。分支读取从 leaf 按 parent 逐级读取，成本与分支深度相关，不加载整段 conversation；缺失 leaf 和 conversation 使用稳定领域错误。持久化 JSON 在 adapter 出口重新通过 contracts schema 校验，未知 driver/constraint/映射错误对外统一为净化的 `persistence_failure`。
+
 ## 当前未实现
 
-- 真实 PostgreSQL repository adapter。
 - AI SDK stream、模型路由、usage normalization 和 provider trace。
 - Redis 完整短期 event replay、cancel flag 与跨实例 tail。
 - 身份/权限、计费、附件所有权、Route Handler 和聊天 UI。

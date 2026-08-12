@@ -15,7 +15,8 @@ export type ChatDomainErrorCode =
   | "run_not_found"
   | "invalid_parent"
   | "invalid_run_transition"
-  | "concurrent_run_update";
+  | "concurrent_run_update"
+  | "persistence_failure";
 
 export class ChatDomainError extends Error {
   readonly code: ChatDomainErrorCode;
