@@ -1,6 +1,6 @@
 /**
- * [INPUT]: 项目固定身份和允许的部署 profile 值
- * [OUTPUT]: 项目身份、部署 profile 与聊天领域公共 schema/type
+ * [INPUT]: 项目身份、部署 profile、聊天与模型目录稳定 contract
+ * [OUTPUT]: 项目身份、部署 profile、聊天与模型目录公共 schema/type
  * [POS]: @repo/contracts 唯一公共导出入口
  *
  * [PROTOCOL]:
@@ -57,3 +57,21 @@ export {
   runIdSchema,
   terminalChatRunStatusSchema,
 } from "./chat";
+export type {
+  ModelCapability,
+  ModelModality,
+  ModelTask,
+  ProtocolId,
+  ProviderFamily,
+  SecretReference,
+} from "./model-catalog";
+export {
+  modelCapabilitySchema,
+  modelKeySchema,
+  modelModalitySchema,
+  modelTaskSchema,
+  protocolIdSchema,
+  providerFamilySchema,
+  secretEnvironmentVariableNameSchema,
+  secretReferenceSchema,
+} from "./model-catalog";

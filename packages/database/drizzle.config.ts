@@ -1,5 +1,5 @@
 /**
- * [INPUT]: DATABASE_URL、聊天 schema 与 Better Auth 生成式 schema
+ * [INPUT]: DATABASE_URL、聊天/模型目录 schema 与 Better Auth 生成式 schema
  * [OUTPUT]: drizzle-kit 的 PostgreSQL migration 生成配置
  * [POS]: @repo/database 的 migration 工具入口，不在应用运行时加载
  *
@@ -18,7 +18,11 @@ export default defineConfig({
   },
   dialect: "postgresql",
   out: "./migrations",
-  schema: ["./src/schema.ts", "./src/auth-schema.ts"],
+  schema: [
+    "./src/schema.ts",
+    "./src/auth-schema.ts",
+    "./src/model-catalog-schema.ts",
+  ],
   strict: true,
   verbose: true,
 });

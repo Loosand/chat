@@ -22,6 +22,13 @@
       "when": 1786546184616,
       "tag": "0002_steep_lady_deathstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1786548278536,
+      "tag": "0003_flat_tana_nile",
+      "breakpoints": true
     }
   ]
 }

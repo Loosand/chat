@@ -1,6 +1,6 @@
 # 项目概述
 
-Chat 是一个从简开始的多模型聊天平台 Monorepo。当前只包含可运行的 Next.js Web 骨架、基础 package contracts 和两份 DEEIX 研究文档；模型网关、认证、持久化、计费、工具与后台均处于规划状态，不得把目标设计写成已实现能力。
+Chat 是一个从简开始的多模型聊天平台 Monorepo。Goal 1 聊天领域/持久化和 Goal 2 的生产认证纵切已完成；当前正在实现四层模型目录与最小真实聊天链路。完整模型网关、计费、工具与后台仍处于后续 Goal，不得把目标设计写成已实现能力。
 
 产品功能事实以 `docs/DEEIX_FEATURE_INVENTORY.zh-CN.md` 为参考，目标技术方案以 `docs/DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md` 为参考，当前架构取舍以根目录 `design.md` 为准。
 

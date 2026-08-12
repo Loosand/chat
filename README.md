@@ -1,6 +1,6 @@
 # Chat
 
-Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**，正在实施 Goal 2；Better Auth 身份组合、认证 schema/migration 与 OwnerId 边界已落地，Web 鉴权挂载、模型调用和聊天竖切仍在继续。
+Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**，正在实施 Goal 2；生产认证纵切和四层模型目录数据事实已落地，模型 CRUD、真实调用和聊天竖切仍在继续。
 
 ## 一键部署
 
@@ -29,6 +29,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 - `@repo/chat` 领域模型、repository ports、应用服务与显式 run 状态机。
 - PostgreSQL/Drizzle 四张聊天事实表、版本化 migration、事务化 repository、幂等/CAS/owner 隔离与真实 PostgreSQL 语义集成测试。
 - Better Auth 1.6 + Drizzle/Admin 邮箱密码/验证/session/重置/封禁能力、Next.js Route Handler、Resend 邮件 adapter、数据库限流、生成式 auth schema/migration 与稳定 OwnerId 映射。
+- Upstream、上游模型绑定、Platform Model、Route 四层模型目录 contract、PostgreSQL schema/migration、环境 secret reference 与约束测试。
 - shadcn/ui Base Rhea + Base UI Chat primitives 与最小 Streamdown 渲染基线；尚未接入真实聊天流。
 - 分形文档协议及两份 DEEIX 研究基线。
 - 指向 `apps/web` 的 Vercel 一键部署入口。
@@ -37,7 +38,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 尚未实现：
 
 - 认证 UI、HTTP/streaming chat composition 和真实模型聊天流。
-- 模型 provider、路由、熔断和上游调试。
+- 模型 CRUD、provider adapter、可用 route 解析、加权/failover、熔断和上游调试。
 - Trigger.dev/BullMQ worker。
 - 文件、RAG、MCP、媒体、计费和管理后台。
 - Redis/对象存储/worker 等完整部署 profile 与生产运维自动化。
@@ -48,8 +49,8 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 | --- | --- |
 | Monorepo | Bun 1.3、Turborepo |
 | Web | Next.js 16 App Router、React 19、Node.js runtime |
-| AI | AI SDK 7、`@ai-sdk/react` 4 已预备；provider、传输与路由待实现 |
-| Data | Drizzle/PostgreSQL schema、migration 与事务化 repository；PGlite 负责 PostgreSQL 语义集成测试 |
+| AI | AI SDK 7、`@ai-sdk/react` 4 已预备；稳定模型 contract/schema 已实现，provider、传输与路由待实现 |
+| Data | Drizzle/PostgreSQL 聊天、认证与四层模型目录 schema/migration；PGlite 负责 PostgreSQL 语义集成测试 |
 | Jobs | 可插拔 JobDriver；Trigger.dev 可选，当前只有 contract |
 | UI | Tailwind CSS v4、shadcn/ui Base Rhea、Base UI、`@shadcn/react`、Streamdown |
 | Quality | TypeScript strict、Biome、Vitest |
@@ -132,6 +133,7 @@ POSTGRES_PASSWORD='replace-with-a-url-safe-secret' docker compose up --build
 - [当前设计基线](./design.md)
 - [长期实施 Goal](./docs/architecture/implementation-goals.md)
 - [聊天核心架构](./docs/architecture/chat-core.md)
+- [模型目录架构](./docs/architecture/model-catalog.md)
 - [Vercel 与 Docker 部署](./docs/architecture/deployment.md)
 - [前端技术基线](./docs/architecture/frontend-stack.md)
 - [DEEIX 功能全量清单](./docs/DEEIX_FEATURE_INVENTORY.zh-CN.md)

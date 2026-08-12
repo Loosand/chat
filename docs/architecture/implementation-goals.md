@@ -29,12 +29,14 @@
 
 - Goal 2.1：Better Auth 1.6/Drizzle/Admin 首期配置、可复现 schema generation、追加 migration、server/client factory 与唯一 `OwnerId` 映射；认证 migration 通过 PGlite 集成测试。
 - Goal 2.2：邮箱密码/验证/重置/session/Admin 封禁纵向流程、PostgreSQL 限流、Next.js catch-all Route Handler、Resend + `after()` adapter 与 Vercel/Docker 环境边界；认证 UI 留到最薄前端阶段。
+- Goal 2.3a：稳定 protocol/task/provider/capability/secret reference contract，Upstream、上游模型绑定、Platform Model、Route 四层 PostgreSQL schema 与追加 migration；CRUD 和 route 解析继续实施。
 
 退出条件：用户可以真实对话；刷新读取持久消息；重复 `clientRunId` 不重复执行；显式停止不依赖 Trigger。
 
 Better Auth 的 user id 作为稳定字符串映射到聊天 `OwnerId`；`@repo/chat` 不依赖 Better Auth 类型。Vercel 与 Docker 使用同一套 auth schema，Cookie、trusted origins、base URL 和邮件通道由部署 profile 提供。
 
 完整边界、plugin 分期、migration 和部署安全规则见 [`auth.md`](./auth.md)。
+模型目录的已实现事实、安全边界和后续路由分期见 [`model-catalog.md`](./model-catalog.md)。
 
 ## Goal 3：完整模型网关（规划）
 

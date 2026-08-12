@@ -70,11 +70,11 @@ flowchart TB
 
 | Package | 地位 | 禁止事项 |
 | --- | --- | --- |
-| `contracts` | 公共 Zod schema、稳定类型和错误码 | 不依赖框架或基础设施 |
+| `contracts` | 公共 Zod schema、聊天与模型目录稳定类型和错误码 | 不依赖框架或基础设施 |
 | `chat` | 会话/message/run 领域模型、状态机、ports 和应用服务 | 不依赖 Web、AI SDK、Drizzle、Redis 或任务实现 |
 | `auth` | Better Auth 功能配置、Drizzle adapter、server/client factory 与 OwnerId 映射 | 不向领域泄漏 session/plugin 类型，不在 import 阶段读取环境或连接数据库 |
 | `ai` | AI SDK、provider 与协议适配 | 不访问数据库、计费或任务系统 |
-| `database` | Drizzle、migration、repository adapter | 不依赖 Web 组件 |
+| `database` | Drizzle、聊天/认证/模型目录 migration 与 repository adapter | 不依赖 Web 组件 |
 | `cache` | Redis/Upstash/Memory primitive | 不承载业务规则 |
 | `storage` | Blob/S3/Local 对象边界 | 不决定文件业务状态 |
 | `jobs` | job name、payload、driver contract | 不导出具体 Trigger task 实现 |
@@ -85,7 +85,7 @@ flowchart TB
 
 ## 数据与运行状态
 
-已实现：`@repo/contracts` 与 `@repo/chat` 已定义版本化消息内容、消息树、run/message 状态、重要事件、usage/failure 快照、repository ports 和显式 run 状态机；`@repo/database` 已提交四张 PostgreSQL 事实表、约束、初始 migration 与事务化 repository adapter。完整规则见 [`docs/architecture/chat-core.md`](./docs/architecture/chat-core.md)。模型执行链路仍在后续 Goal 中。
+已实现：`@repo/contracts` 与 `@repo/chat` 已定义版本化消息内容、消息树、run/message 状态、重要事件、usage/failure 快照、repository ports 和显式 run 状态机；`@repo/database` 已提交聊天事实表、约束、migration 与事务化 repository adapter。Goal 2.3a 另已提交稳定模型 contract 和 Upstream/Binding/Platform Model/Route 四层 PostgreSQL 事实表，credential 只保存环境变量引用。完整规则见 [`docs/architecture/chat-core.md`](./docs/architecture/chat-core.md) 与 [`docs/architecture/model-catalog.md`](./docs/architecture/model-catalog.md)。模型 CRUD、resolver 和执行链路仍在后续功能中。
 
 规划：
 
