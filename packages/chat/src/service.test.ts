@@ -152,6 +152,7 @@ describe("chat service", () => {
       findConversationForOwner: () => Promise.resolve(null),
       findMessageForOwner: () =>
         Promise.resolve({ id: assistantMessageId } as never),
+      findRunByAssistantMessageForOwner: () => Promise.resolve(run),
       findRunForOwner: () => Promise.resolve(run),
     });
     const service = createService(repository);
@@ -167,6 +168,9 @@ describe("chat service", () => {
       id: assistantMessageId,
     });
     await expect(service.getRun(runId, ownerId)).resolves.toBe(run);
+    await expect(
+      service.getRunByAssistantMessage(assistantMessageId, ownerId)
+    ).resolves.toBe(run);
   });
 });
 
@@ -228,6 +232,7 @@ function createRepositoryFake(
     createRunTurn: notImplemented,
     findConversationForOwner: notImplemented,
     findMessageForOwner: notImplemented,
+    findRunByAssistantMessageForOwner: notImplemented,
     findRunForOwner: notImplemented,
     listBranchMessages: notImplemented,
     listRunEvents: notImplemented,

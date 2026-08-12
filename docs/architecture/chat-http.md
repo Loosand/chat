@@ -1,7 +1,7 @@
 # Chat HTTP
 
 > 代码源头：`packages/contracts/src/chat-api.ts`、`apps/web/server/chat-http.ts`、`apps/web/server/chat-runtime.ts`、`apps/web/app/api/chat/`
-> 状态：conversation、公开模型、run 创建/snapshot、有限 SSE checkpoint 与显式取消 API 已实现；认证/聊天 UI 尚未实现。
+> 状态：conversation（含 active run 恢复线索）、公开模型、run 创建/snapshot、有限 SSE checkpoint 与显式取消 API 已实现；认证 UI 已实现，聊天 UI 正在接入。
 
 ## Composition
 
@@ -14,14 +14,16 @@ Vercel Route Handler 通过 Next.js `after()` 托管新/pending run 的 executio
 | Method | Path | 语义 |
 | --- | --- | --- |
 | POST | `/api/chat/conversations` | 创建 owner-scoped conversation |
-| GET | `/api/chat/conversations/:id` | 返回 conversation 与 active root-to-leaf branch |
+| GET | `/api/chat/conversations/:id` | 返回 conversation、active root-to-leaf branch 与当前可恢复 active run |
 | GET | `/api/chat/models` | 返回 public/enabled/route-available chat 平台模型 |
 | POST | `/api/chat/runs` | 原子创建 user/assistant/run；重复 `clientRunId` 返回原事实；pending 可重触发领取 |
 | GET | `/api/chat/runs/:id` | 返回最新公开 run + assistant checkpoint |
 | GET | `/api/chat/runs/:id/events?after=N` | 从 sequence cursor 获取 snapshot/event，并有限 long-poll |
 | POST | `/api/chat/runs/:id/cancel` | 幂等持久取消，再做同进程 Abort 加速 |
 
-所有聊天资源先从 Better Auth 权威数据库 session 映射 OwnerId；不存在与其他 owner 的 ID 使用相同 404。公开模型列表不含 topology/system prompt/credential reference。conversation 不返回 ownerId；run 不返回 ownerId、route snapshot/base URL/credential reference；消息不返回 hidden reasoning。
+所有聊天资源先从 Better Auth 权威数据库 session 映射 OwnerId；不存在与其他 owner 的 ID 使用相同 404。公开模型列表不含 topology/system prompt/credential reference。conversation 不返回 ownerId；run 不返回 ownerId、route snapshot/base URL/credential reference；消息不返回 hidden reasoning。conversation snapshot 只在当前 active leaf 是 assistant 且其 run 仍为 pending/running/cancel_requested 时返回净化后的 `activeRun`，终态返回 `null`。
+
+公共 JSON resource 既有 TypeScript 类型也有 Zod response schema。浏览器必须先验证 response，再将其转换为 UI 状态；不能把 `response.json()` 结果直接断言成 contract 类型。
 
 ## Write security
 

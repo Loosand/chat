@@ -1,6 +1,6 @@
 /**
  * [INPUT]: ChatRepository、Clock、IdGenerator 与已校验的聊天命令
- * [OUTPUT]: ChatService；创建会话、原子准备 turn、checkpoint、转换、分支读取和事件重放
+ * [OUTPUT]: ChatService；创建会话、原子准备 turn、checkpoint、转换、分支/active run 读取和事件重放
  * [POS]: @repo/chat 的应用服务入口，编排领域规则但不执行模型调用
  * [DOC]: docs/architecture/chat-core.md
  *
@@ -116,6 +116,10 @@ export type ChatService = {
     ownerId: string
   ): Promise<Conversation>;
   getMessage(messageId: string, ownerId: string): Promise<Message>;
+  getRunByAssistantMessage(
+    assistantMessageId: string,
+    ownerId: string
+  ): Promise<ChatRun | null>;
   getRun(runId: string, ownerId: string): Promise<ChatRun>;
   listBranchMessages(
     conversationId: string,
@@ -211,6 +215,17 @@ export function createChatService({
     getRun(runId, ownerId) {
       const parsed = ownerScopedRunSchema.parse({ ownerId, runId });
       return requireRun(repository, parsed.runId, parsed.ownerId);
+    },
+
+    getRunByAssistantMessage(assistantMessageId, ownerId) {
+      const parsed = ownerScopedMessageSchema.parse({
+        messageId: assistantMessageId,
+        ownerId,
+      });
+      return repository.findRunByAssistantMessageForOwner(
+        parsed.messageId,
+        parsed.ownerId
+      );
     },
 
     async checkpointAssistant(input) {

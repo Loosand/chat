@@ -10,31 +10,25 @@
  */
 
 import { z } from "zod";
-import type {
-  ChatRunStatus,
-  ConversationId,
-  JsonValue,
-  MessageBranchReason,
-  MessageContent,
-  MessageId,
-  MessageRole,
-  MessageStatus,
-  NormalizedUsage,
-  RunEventType,
-  RunFailure,
-  RunId,
-} from "./chat";
 import {
+  chatRunStatusSchema,
   clientRunIdSchema,
   conversationIdSchema,
+  jsonValueSchema,
   messageBranchReasonSchema,
+  messageContentSchema,
   messageIdSchema,
+  messageRoleSchema,
+  messageStatusSchema,
+  normalizedUsageSchema,
+  runEventTypeSchema,
+  runFailureSchema,
   runIdSchema,
 } from "./chat";
 import {
-  type ModelCapability,
-  type ModelTask,
+  modelCapabilitySchema,
   modelKeySchema,
+  modelTaskSchema,
 } from "./model-catalog";
 
 export const createChatConversationRequestSchema = z.strictObject({
@@ -66,88 +60,106 @@ export type CreateChatConversationRequest = z.input<
 >;
 export type CreateChatRunRequest = z.input<typeof createChatRunRequestSchema>;
 
-export type ConversationResource = {
-  activeLeafMessageId: MessageId | null;
-  archivedAt: string | null;
-  createdAt: string;
-  id: ConversationId;
-  title: string;
-  updatedAt: string;
-};
+const isoDateTimeSchema = z.iso.datetime({ offset: true });
 
-export type MessageResource = {
-  branchReason: MessageBranchReason;
-  content: MessageContent;
-  conversationId: ConversationId;
-  createdAt: string;
-  id: MessageId;
-  parentId: MessageId | null;
-  role: MessageRole;
-  status: MessageStatus;
-  updatedAt: string;
-};
+export const conversationResourceSchema = z.strictObject({
+  activeLeafMessageId: messageIdSchema.nullable(),
+  archivedAt: isoDateTimeSchema.nullable(),
+  createdAt: isoDateTimeSchema,
+  id: conversationIdSchema,
+  title: z.string(),
+  updatedAt: isoDateTimeSchema,
+});
 
-export type ChatRunResource = {
-  assistantMessageId: MessageId;
-  cancelRequestedAt: string | null;
-  clientRunId: string;
-  conversationId: ConversationId;
-  createdAt: string;
-  failure: RunFailure | null;
-  finishedAt: string | null;
-  id: RunId;
-  lastEventSequence: number;
-  requestedModelId: string | null;
-  startedAt: string | null;
-  status: ChatRunStatus;
-  updatedAt: string;
-  usage: NormalizedUsage | null;
-  userMessageId: MessageId;
-  version: number;
-};
+export const messageResourceSchema = z.strictObject({
+  branchReason: messageBranchReasonSchema,
+  content: messageContentSchema,
+  conversationId: conversationIdSchema,
+  createdAt: isoDateTimeSchema,
+  id: messageIdSchema,
+  parentId: messageIdSchema.nullable(),
+  role: messageRoleSchema,
+  status: messageStatusSchema,
+  updatedAt: isoDateTimeSchema,
+});
 
-export type RunEventResource = {
-  at: string;
-  data: JsonValue;
-  runId: RunId;
-  sequence: number;
-  type: RunEventType;
-};
+export const chatRunResourceSchema = z.strictObject({
+  assistantMessageId: messageIdSchema,
+  cancelRequestedAt: isoDateTimeSchema.nullable(),
+  clientRunId: clientRunIdSchema,
+  conversationId: conversationIdSchema,
+  createdAt: isoDateTimeSchema,
+  failure: runFailureSchema.nullable(),
+  finishedAt: isoDateTimeSchema.nullable(),
+  id: runIdSchema,
+  lastEventSequence: z.number().int().nonnegative(),
+  requestedModelId: z.string().nullable(),
+  startedAt: isoDateTimeSchema.nullable(),
+  status: chatRunStatusSchema,
+  updatedAt: isoDateTimeSchema,
+  usage: normalizedUsageSchema.nullable(),
+  userMessageId: messageIdSchema,
+  version: z.number().int().nonnegative(),
+});
 
-export type PublicModelResource = {
-  capability: ModelCapability;
-  description: string | null;
-  displayName: string;
-  key: string;
-  sortOrder: number;
-  task: ModelTask;
-};
+export const runEventResourceSchema = z.strictObject({
+  at: isoDateTimeSchema,
+  data: jsonValueSchema,
+  runId: runIdSchema,
+  sequence: z.number().int().positive(),
+  type: runEventTypeSchema,
+});
 
-export type ConversationSnapshotResource = {
-  conversation: ConversationResource;
-  messages: MessageResource[];
-};
+export const publicModelResourceSchema = z.strictObject({
+  capability: modelCapabilitySchema,
+  description: z.string().nullable(),
+  displayName: z.string(),
+  key: modelKeySchema,
+  sortOrder: z.number().int(),
+  task: modelTaskSchema,
+});
 
-export type PreparedRunResource = {
-  assistantMessage: MessageResource;
-  created: boolean;
-  run: ChatRunResource;
-  userMessage: MessageResource;
-};
+export const conversationSnapshotResourceSchema = z.strictObject({
+  activeRun: chatRunResourceSchema.nullable(),
+  conversation: conversationResourceSchema,
+  messages: z.array(messageResourceSchema),
+});
 
-export type RunSnapshotResource = {
-  assistantMessage: MessageResource;
-  run: ChatRunResource;
-};
+export const preparedRunResourceSchema = z.strictObject({
+  assistantMessage: messageResourceSchema,
+  created: z.boolean(),
+  run: chatRunResourceSchema,
+  userMessage: messageResourceSchema,
+});
 
-export type RunEventSnapshotResource = RunSnapshotResource & {
-  cursor: number;
-  events: RunEventResource[];
-};
+export const runSnapshotResourceSchema = z.strictObject({
+  assistantMessage: messageResourceSchema,
+  run: chatRunResourceSchema,
+});
 
-export type ChatApiErrorResource = {
-  error: {
-    code: string;
-    message: string;
-  };
-};
+export const runEventSnapshotResourceSchema = runSnapshotResourceSchema.extend({
+  cursor: z.number().int().nonnegative(),
+  events: z.array(runEventResourceSchema),
+});
+
+export const chatApiErrorResourceSchema = z.strictObject({
+  error: z.strictObject({
+    code: z.string(),
+    message: z.string(),
+  }),
+});
+
+export type ConversationResource = z.infer<typeof conversationResourceSchema>;
+export type MessageResource = z.infer<typeof messageResourceSchema>;
+export type ChatRunResource = z.infer<typeof chatRunResourceSchema>;
+export type RunEventResource = z.infer<typeof runEventResourceSchema>;
+export type PublicModelResource = z.infer<typeof publicModelResourceSchema>;
+export type ConversationSnapshotResource = z.infer<
+  typeof conversationSnapshotResourceSchema
+>;
+export type PreparedRunResource = z.infer<typeof preparedRunResourceSchema>;
+export type RunSnapshotResource = z.infer<typeof runSnapshotResourceSchema>;
+export type RunEventSnapshotResource = z.infer<
+  typeof runEventSnapshotResourceSchema
+>;
+export type ChatApiErrorResource = z.infer<typeof chatApiErrorResourceSchema>;

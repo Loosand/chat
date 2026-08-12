@@ -72,11 +72,21 @@ export type {
   RunSnapshotResource,
 } from "./chat-api";
 export {
+  chatApiErrorResourceSchema,
   chatConversationPathSchema,
   chatRunPathSchema,
+  chatRunResourceSchema,
+  conversationResourceSchema,
+  conversationSnapshotResourceSchema,
   createChatConversationRequestSchema,
   createChatRunRequestSchema,
+  messageResourceSchema,
+  preparedRunResourceSchema,
+  publicModelResourceSchema,
   runEventCursorSchema,
+  runEventResourceSchema,
+  runEventSnapshotResourceSchema,
+  runSnapshotResourceSchema,
 } from "./chat-api";
 export type {
   ModelCapability,

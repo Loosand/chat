@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 聊天领域模型、创建/转换/checkpoint 所需的稳定值
- * [OUTPUT]: ChatRepository、Clock、IdGenerator ports 与 adapter 输入类型
+ * [OUTPUT]: ChatRepository（含 assistant→run 恢复读取）、Clock、IdGenerator ports 与 adapter 输入类型
  * [POS]: @repo/chat 依赖倒置边界，由 database 和应用 composition root 实现
  * [DOC]: docs/architecture/chat-core.md
  *
@@ -101,6 +101,10 @@ export type ChatRepository = {
     messageId: MessageId,
     ownerId: OwnerId
   ): Promise<Message | null>;
+  findRunByAssistantMessageForOwner(
+    assistantMessageId: MessageId,
+    ownerId: OwnerId
+  ): Promise<ChatRun | null>;
   findRunForOwner(runId: RunId, ownerId: OwnerId): Promise<ChatRun | null>;
   listBranchMessages(
     conversationId: ConversationId,

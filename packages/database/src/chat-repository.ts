@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 通用 Drizzle PostgreSQL database、@repo/chat repository port 与稳定 contracts
- * [OUTPUT]: 事务化 createDrizzleChatRepository adapter
+ * [OUTPUT]: 事务化 createDrizzleChatRepository 与 owner-scoped run 恢复读取 adapter
  * [POS]: @repo/database 对聊天领域 port 的 PostgreSQL 实现
  * [DOC]: docs/architecture/chat-core.md
  *
@@ -194,6 +194,22 @@ export function createDrizzleChatRepository<
 
     findRunForOwner(runId, ownerId) {
       return withPersistenceBoundary(() => findRun(database, runId, ownerId));
+    },
+
+    findRunByAssistantMessageForOwner(assistantMessageId, ownerId) {
+      return withPersistenceBoundary(async () => {
+        const [row] = await database
+          .select()
+          .from(chatRuns)
+          .where(
+            and(
+              eq(chatRuns.assistantMessageId, assistantMessageId),
+              eq(chatRuns.ownerId, ownerId)
+            )
+          )
+          .limit(1);
+        return row ? mapRun(row) : null;
+      });
     },
 
     listBranchMessages(conversationId, leafMessageId, ownerId) {

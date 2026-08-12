@@ -11,6 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  conversationSnapshotResourceSchema,
   createChatConversationRequestSchema,
   createChatRunRequestSchema,
   runEventCursorSchema,
@@ -58,5 +59,15 @@ describe("chat HTTP contracts", () => {
     });
     expect(runEventCursorSchema.parse("3")).toBe(3);
     expect(() => runEventCursorSchema.parse("-1")).toThrow();
+  });
+
+  it("validates persisted conversation snapshots at the browser boundary", () => {
+    expect(() =>
+      conversationSnapshotResourceSchema.parse({
+        activeRun: null,
+        conversation: { id: "not-a-uuid" },
+        messages: [],
+      })
+    ).toThrow();
   });
 });

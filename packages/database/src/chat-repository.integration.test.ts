@@ -126,6 +126,15 @@ describe("Drizzle ChatRepository", () => {
       .from(conversations)
       .where(eq(conversations.id, conversationId));
     expect(conversation?.activeLeafMessageId).toBe(assistantMessageId);
+    await expect(
+      repository.findRunByAssistantMessageForOwner(assistantMessageId, ownerId)
+    ).resolves.toMatchObject({ id: runId });
+    await expect(
+      repository.findRunByAssistantMessageForOwner(
+        assistantMessageId,
+        otherOwnerId
+      )
+    ).resolves.toBeNull();
   });
 
   it("rolls back the whole turn when its parent is invalid", async () => {

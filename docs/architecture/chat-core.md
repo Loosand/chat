@@ -83,7 +83,7 @@ stateDiagram-v2
 
 `createDrizzleChatRepository()` 面向通用 Drizzle PostgreSQL database，因此生产 `postgres-js` 与测试 PGlite 共享一套实现。turn 创建、checkpoint 和状态转换分别在单个事务中完成；所有 run 更新同时写 assistant 状态和递增 sequence 的重要事件。`(ownerId, clientRunId)` 的唯一冲突在事务回滚后读取既有事实，返回 `created=false`。
 
-所有 conversation、message、run、event 与 branch 读取都把 owner 纳入查询。service 对不存在或不属于 owner 的单项事实统一返回相应 not-found 语义，不泄漏其他用户是否拥有该 ID。分支读取从 leaf 按 parent 逐级读取，成本与分支深度相关，不加载整段 conversation；缺失 leaf 和 conversation 使用稳定领域错误。持久化 JSON 在 adapter 出口重新通过 contracts schema 校验，未知 driver/constraint/映射错误对外统一为净化的 `persistence_failure`。
+所有 conversation、message、run、event 与 branch 读取都把 owner 纳入查询。service 对不存在或不属于 owner 的单项事实统一返回相应 not-found 语义，不泄漏其他用户是否拥有该 ID。分支读取从 leaf 按 parent 逐级读取，成本与分支深度相关，不加载整段 conversation；刷新恢复可用当前 leaf assistant message 反查同 owner run，且不存在时返回 `null`。缺失 leaf 和 conversation 使用稳定领域错误。持久化 JSON 在 adapter 出口重新通过 contracts schema 校验，未知 driver/constraint/映射错误对外统一为净化的 `persistence_failure`。
 
 ## 可执行契约
 
