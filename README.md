@@ -76,6 +76,9 @@ docs/
 ├── architecture/          # 身份、聊天、部署、前端与文档架构规则
 ├── DEEIX_FEATURE_INVENTORY.zh-CN.md
 └── DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md
+
+.agents/
+└── skills/                # 项目级 Agent Skills 与工程工作流
 ```
 
 目录职责和成员以各目录 `.folder.md` 为准。
