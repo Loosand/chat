@@ -20,7 +20,9 @@ import { isChatDomainError, isTerminalRunStatus } from "@repo/chat";
 import type {
   ChatApiErrorResource,
   ChatRunResource,
+  ConversationId,
   ConversationResource,
+  ConversationSnapshotResource,
   MessageContent,
   MessageResource,
   OwnerId,
@@ -195,6 +197,36 @@ export async function getRunSnapshot(
   return {
     assistantMessage: toMessageResource(assistantMessage),
     run: toRunResource(run),
+  };
+}
+
+export async function getConversationSnapshot(
+  chat: ChatService,
+  conversationId: ConversationId,
+  ownerId: OwnerId
+): Promise<ConversationSnapshotResource> {
+  const conversation = await chat.getConversation(conversationId, ownerId);
+  const messages = conversation.activeLeafMessageId
+    ? await chat.listBranchMessages(
+        conversation.id,
+        conversation.activeLeafMessageId,
+        ownerId
+      )
+    : [];
+  const run = conversation.activeLeafMessageId
+    ? await chat.getRunByAssistantMessage(
+        conversation.activeLeafMessageId,
+        ownerId
+      )
+    : null;
+  const activeRun =
+    run && ["pending", "running", "cancel_requested"].includes(run.status)
+      ? toRunResource(run)
+      : null;
+  return {
+    activeRun,
+    conversation: toConversationResource(conversation),
+    messages: messages.map(toMessageResource),
   };
 }
 

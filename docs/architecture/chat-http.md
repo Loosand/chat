@@ -1,7 +1,7 @@
 # Chat HTTP
 
 > 代码源头：`packages/contracts/src/chat-api.ts`、`apps/web/server/chat-http.ts`、`apps/web/server/chat-runtime.ts`、`apps/web/app/api/chat/`
-> 状态：conversation（含 active run 恢复线索）、公开模型、run 创建/snapshot、有限 SSE checkpoint 与显式取消 API 已实现；认证 UI 已实现，聊天 UI 正在接入。
+> 状态：conversation（含 active run 恢复线索）、公开模型、run 创建/snapshot、有限 SSE checkpoint、显式取消，以及 AI SDK 持久聊天 UI 已实现。
 
 ## Composition
 
@@ -42,6 +42,17 @@ SSE 事件固定为：
 - `reconnect`：20 秒窗口结束，客户端使用 cursor 重连。
 
 订阅每 250ms 查询 PostgreSQL，终态立即关闭。页面刷新可以先 GET conversation/run snapshot，再以持久 cursor 重订阅。浏览器断开只 abort SSE polling，从不把 request signal 传给 executor；只有 cancel endpoint 会写 `cancel_requested` 并调用局部 manager Abort。Redis/Upstash 以后可降低查询和延迟，但 PostgreSQL snapshot/cursor 仍是可靠恢复底线。
+
+浏览器使用自定义 AI SDK `ChatTransport`，不让一次 Route Handler response 决定 run 生命周期：
+
+1. 新会话先创建 owner-scoped conversation，并把稳定 URL 替换为 `/chat/:conversationId`。
+2. 最新用户消息 id 作为 `clientRunId`，持久 parent id 和模型 key 一起提交给 `POST /runs`。
+3. transport 将 checkpoint snapshot 转换为 `UIMessageChunk`；所有 JSON/SSE public resource 都先通过 Zod response schema。
+4. 页面重载时 Server Component 返回持久 branch、assistant baseline 和可选 `activeRun`，`useChat({ resume: true })` 重订阅同一 run。
+5. transport 只接受 append-only checkpoint；前缀不一致立即失败，避免 silent duplication。
+6. Stop 按钮调用持久 cancel API，浏览器 disconnect 不等价于停止。
+
+文本 assistant 使用 Streamdown；用户输入按纯文本渲染。当前 reasoning summary 与来源标签有显式 renderer，工具审批、附件和媒体 part 留在后续 Goal。
 
 ## Current limits
 

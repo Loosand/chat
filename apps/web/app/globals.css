@@ -1,6 +1,6 @@
 /**
  * [INPUT]: Tailwind CSS v4、@repo/design-system 语义 token 与 Web 页面元素
- * [OUTPUT]: apps/web 的全局样式、首页入口、认证页面和聊天壳布局
+ * [OUTPUT]: apps/web 的全局样式、首页入口、认证页面和持久聊天工作区布局
  * [POS]: Web 样式入口，负责源码扫描并组合共享样式
  *
  * [PROTOCOL]:
@@ -131,31 +131,16 @@
   margin-top: 0.75rem;
 }
 
-.chat-placeholder {
-  width: min(34rem, 100%);
-  padding: 2rem;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-}
-
-.chat-placeholder h1 {
-  margin: 0;
-  font-size: 2rem;
-  letter-spacing: -0.04em;
-}
-
-.chat-placeholder-copy {
-  margin: 1rem 0 0;
-  line-height: 1.7;
-  color: var(--muted-foreground);
-}
-
 .sign-out-control {
   display: grid;
   gap: 0.75rem;
   justify-items: start;
   margin-top: 1.5rem;
+}
+
+.chat-header .sign-out-control {
+  display: block;
+  margin: 0;
 }
 
 .auth-error-text {
@@ -164,8 +149,231 @@
   color: var(--destructive);
 }
 
+.chat-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  height: 100dvh;
+  min-height: 32rem;
+}
+
+.chat-header {
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 4rem;
+  padding: 0.75rem clamp(1rem, 3vw, 2rem);
+  background: var(--background);
+  border-bottom: 1px solid var(--border);
+}
+
+.chat-brand,
+.chat-conversation-title {
+  margin: 0;
+}
+
+.chat-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.chat-brand {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.chat-conversation-title {
+  max-width: min(52vw, 36rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+.chat-transcript {
+  min-height: 0;
+}
+
+.chat-message-content {
+  width: min(48rem, calc(100% - 2rem));
+  padding: 3rem 0 8rem;
+  margin: 0 auto;
+}
+
+.chat-empty-state {
+  display: grid;
+  place-content: center;
+  max-width: 34rem;
+  height: 100%;
+  padding: 2rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.chat-empty-state h2 {
+  margin: 0;
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  letter-spacing: -0.055em;
+}
+
+.chat-empty-state p:last-child {
+  margin: 1rem 0 0;
+  line-height: 1.7;
+  color: var(--muted-foreground);
+}
+
+.chat-assistant-bubble {
+  width: 100%;
+}
+
+.chat-reasoning,
+.chat-sources {
+  max-width: 42rem;
+  padding: 0.75rem 1rem;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  border-radius: var(--radius-xl);
+}
+
+.chat-reasoning summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.chat-reasoning p,
+.chat-sources p,
+.chat-sources ul {
+  margin: 0;
+}
+
+.chat-reasoning p,
+.chat-sources ul {
+  margin-top: 0.5rem;
+}
+
+.chat-sources ul {
+  padding-left: 1.25rem;
+}
+
+.chat-bottom {
+  z-index: 3;
+  width: min(48rem, calc(100% - 2rem));
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  margin: 0 auto;
+}
+
+.chat-error {
+  margin-bottom: 0.75rem;
+}
+
+.chat-composer {
+  padding: 0.75rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-3xl);
+  box-shadow: 0 1rem 3rem color-mix(in oklch, var(--foreground) 8%, transparent);
+}
+
+.chat-composer-controls,
+.chat-composer-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.chat-composer-controls {
+  padding: 0 0.25rem 0.5rem;
+}
+
+.chat-composer-row [data-slot="textarea"] {
+  min-height: 3.5rem;
+  max-height: 14rem;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.chat-model-select {
+  max-width: 14rem;
+  height: 2rem;
+  padding: 0 1.75rem 0 0.625rem;
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--foreground);
+  background: var(--muted);
+  border: 1px solid transparent;
+  border-radius: var(--radius-xl);
+}
+
+.chat-model-select:focus-visible {
+  outline: 3px solid color-mix(in oklch, var(--ring) 30%, transparent);
+  outline-offset: 1px;
+}
+
+.chat-composer-hint {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.chat-disclaimer {
+  margin: 0.5rem 0 0;
+  font-size: 0.6875rem;
+  color: var(--muted-foreground);
+  text-align: center;
+}
+
+.chat-boundary {
+  display: grid;
+  place-content: center;
+  max-width: 36rem;
+  min-height: 100dvh;
+  padding: 2rem;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.chat-boundary h1,
+.chat-boundary p {
+  margin: 0;
+}
+
+.chat-boundary h1 {
+  font-size: clamp(2rem, 6vw, 3.5rem);
+  letter-spacing: -0.055em;
+}
+
+.chat-boundary > p:not(.eyebrow) {
+  margin-top: 1rem;
+  line-height: 1.7;
+  color: var(--muted-foreground);
+}
+
+.chat-boundary > a,
+.chat-boundary-actions {
+  margin-top: 1.5rem;
+}
+
+.chat-boundary-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+
 @media (min-width: 48rem) {
   .panel-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 36rem) {
+  .chat-composer-hint {
+    display: none;
+  }
+
+  .chat-message-content {
+    padding-top: 2rem;
   }
 }

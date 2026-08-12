@@ -1,6 +1,6 @@
 # Chat Design Baseline
 
-> 状态：M0 工程骨架与 Goal 1 已完成，Goal 2 竖切实施中；本文件中的业务架构除明确标为“已实现”的部分外均为规划。
+> 状态：M0 工程骨架、Goal 1 与 Goal 2 聊天竖切已完成，Goal 3 模型网关为下一阶段；本文件中的业务架构除明确标为“已实现”的部分外均为规划。
 > 研究依据：`docs/DEEIX_FEATURE_INVENTORY.zh-CN.md`、`docs/DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md`
 
 ## 产品方向
@@ -42,7 +42,7 @@ flowchart TB
   Logger["@repo/logger"]
 ```
 
-当前 package 和 API 的实际能力以各架构文档“状态”段为准；空骨架不等同于具体业务完成。
+Browser 端现已通过 `useChat` 自定义 durable transport 接入 Web：conversation/run 创建和 PostgreSQL checkpoint SSE 是服务端事实，AI SDK `UIMessage` 只是渲染状态。当前 package 和 API 的实际能力以各架构文档“状态”段为准；空骨架不等同于具体业务完成。
 
 ## 目标运行架构（规划）
 
@@ -94,7 +94,7 @@ flowchart TB
 
 ## 数据与运行状态
 
-已实现：`@repo/contracts` 与 `@repo/chat` 已定义版本化消息内容、消息树、run/message 状态、重要事件、usage/failure 快照、repository ports 和显式 run 状态机；`@repo/database` 已提交聊天事实表、约束、migration 与事务化 repository adapter。Goal 2.3 实现稳定模型 contract、`@repo/model-router` 管理用例/fail-closed 单 route 解析，以及四层 PostgreSQL CRUD/CAS；Goal 2.4 实现首批文本 provider adapter、稳定 usage、共享 URL/DNS 安全策略和连接时 pinning；Goal 2.5 已实现 `@repo/chat-engine`，运行时解析 credential reference 并固定不含密钥的 route snapshot，消费 AI SDK stream、周期 checkpoint，同时以 AbortSignal 和数据库状态监察取消；Next.js HTTP 边界已提供 owner-scoped snapshot、有限 SSE cursor、刷新恢复与显式取消；Goal 2.6a 已提供 Vercel/Docker 共用且不覆盖既有配置的单模型环境 bootstrap。完整规则见 [`docs/architecture/chat-core.md`](./docs/architecture/chat-core.md)、[`docs/architecture/chat-execution.md`](./docs/architecture/chat-execution.md)、[`docs/architecture/chat-http.md`](./docs/architecture/chat-http.md)、[`docs/architecture/model-bootstrap.md`](./docs/architecture/model-bootstrap.md)、[`docs/architecture/model-catalog.md`](./docs/architecture/model-catalog.md)、[`docs/architecture/ai-adapters.md`](./docs/architecture/ai-adapters.md) 与 [`docs/architecture/network-security.md`](./docs/architecture/network-security.md)。管理 HTTP/UI 和完整 resolver/failover 仍在后续功能中。
+已实现：`@repo/contracts` 与 `@repo/chat` 已定义版本化消息内容、消息树、run/message 状态、重要事件、usage/failure 快照、repository ports 和显式 run 状态机；`@repo/database` 已提交聊天事实表、约束、migration 与事务化 repository adapter。Goal 2.3 实现稳定模型 contract、`@repo/model-router` 管理用例/fail-closed 单 route 解析，以及四层 PostgreSQL CRUD/CAS；Goal 2.4 实现首批文本 provider adapter、稳定 usage、共享 URL/DNS 安全策略和连接时 pinning；Goal 2.5 已实现 `@repo/chat-engine`，运行时解析 credential reference 并固定不含密钥的 route snapshot，消费 AI SDK stream、周期 checkpoint，同时以 AbortSignal 和数据库状态监察取消；Next.js HTTP 边界已提供 owner-scoped snapshot、有限 SSE cursor、刷新恢复与显式取消；Goal 2.6a 已提供 Vercel/Docker 共用且不覆盖既有配置的单模型环境 bootstrap；Goal 2.6c 已用 AI SDK 自定义 transport 接通真实浏览器竖切，active run 刷新后从持久 baseline 续接且不重复文本。完整规则见 [`docs/architecture/chat-core.md`](./docs/architecture/chat-core.md)、[`docs/architecture/chat-execution.md`](./docs/architecture/chat-execution.md)、[`docs/architecture/chat-http.md`](./docs/architecture/chat-http.md)、[`docs/architecture/model-bootstrap.md`](./docs/architecture/model-bootstrap.md)、[`docs/architecture/model-catalog.md`](./docs/architecture/model-catalog.md)、[`docs/architecture/ai-adapters.md`](./docs/architecture/ai-adapters.md) 与 [`docs/architecture/network-security.md`](./docs/architecture/network-security.md)。管理 HTTP/UI 和完整 resolver/failover 仍在后续功能中。
 
 规划：
 
@@ -129,7 +129,7 @@ Goal 1 已实现构建 profile 分离：Vercel 检测到系统变量 `VERCEL=1` 
 
 ## 前端渲染基线
 
-已实现预备层：shadcn Message/Bubble/Attachment/Marker、`@shadcn/react/message-scroller`、`@ai-sdk/react` 依赖和最小 `StreamingMarkdown`；后端 SSE Route Handler、持久 snapshot 与 cursor 刷新恢复已实现。聊天页面、typed UIMessage part registry 与浏览器 SSE client 仍为规划。
+已实现最薄产品层：shadcn Message/Bubble/Attachment/Marker、`@shadcn/react/message-scroller`、AI SDK `useChat`、自定义 checkpoint transport 和 `StreamingMarkdown`；Server Component 读取历史/active run，浏览器可发送、流式显示、停止并在刷新后恢复同一 run。工具、附件、媒体和外链确认仍为规划。
 
 - Assistant 文本统一进入 Streamdown；代码与 Mermaid 插件按内容动态加载。
 - MessageScroller 负责滚动和锚点，不持有聊天状态。

@@ -1,6 +1,6 @@
 # Chat
 
-Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**，正在实施 Goal 2；生产认证及其最薄用户界面、四层模型目录、首批 AI SDK 文本 adapter、可替换 chat run 执行器、HTTP/刷新恢复及单模型环境 bootstrap 已落地，聊天界面仍在继续。
+Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**及 **Goal 2 身份、最小模型目录与聊天竖切**；当前可以完成真实登录、持久流式对话、刷新恢复和显式停止，下一阶段进入完整模型网关。
 
 ## 一键部署
 
@@ -34,16 +34,17 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 - `@repo/ai` 的 OpenAI Responses/Chat、OpenRouter Chat、Anthropic Messages、Google Generate Content、xAI Responses 与 generic OpenAI-compatible 文本 adapter；精确 endpoint contract、零隐式重试和稳定 usage 归一化。
 - `@repo/chat-engine` 的单 route 执行编排、无密钥 route snapshot、历史转换、AI SDK event 消费、周期 checkpoint、数据库取消监察与安全终态。
 - `apps/web` 的 owner-scoped conversation/model/run API、可信 Origin/有限 body、防 mass assignment、`after()` 调度、PostgreSQL checkpoint SSE、刷新 snapshot 与显式取消。
+- 最薄持久聊天工作区：Server Component 首屏、稳定 conversation URL、AI SDK `useChat` + 自定义 durable transport、模型选择、Streamdown assistant、运行中停止、错误/404 边界和 active run 刷新续接。
 - `CHAT_MODEL_*` 的单文本模型 bootstrap：并发可恢复地补齐四层目录，只持久化环境 secret reference，既有配置冲突时不自动覆盖。
 - `@repo/network-security` 的共享 URL/DNS policy 与 Node 连接时 pinned lookup；provider 请求限定同源/base-path 并禁止自动 redirect。
-- shadcn/ui Base Rhea + Base UI Chat primitives 与最小 Streamdown 渲染基线；尚未接入真实聊天流。
+- shadcn/ui Base Rhea + Base UI Chat primitives、MessageScroller 与 Streamdown 文本渲染；reasoning summary 和来源安全标签已有显式 part renderer。
 - 分形文档协议及两份 DEEIX 研究基线。
 - 指向 `apps/web` 的 Vercel 一键部署入口。
 - Next.js standalone 多阶段 Docker image、显式 migrate target 与 PostgreSQL Compose profile。
 
 尚未实现：
 
-- 聊天 UI、模型管理入口和端到端真实 provider 验收。
+- 模型管理入口、真实官方 provider 凭证验收，以及 conversation 列表/归档/编辑/retry。
 - 模型管理 HTTP/UI、剩余文本/媒体协议、加权/failover、熔断和上游调试。
 - Trigger.dev/BullMQ worker。
 - 文件、RAG、MCP、媒体、计费和管理后台。
@@ -55,7 +56,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 | --- | --- |
 | Monorepo | Bun 1.3、Turborepo |
 | Web | Next.js 16 App Router、React 19、Node.js runtime |
-| AI | AI SDK 7；首批七种 family/protocol 文本 adapter、guarded transport、usage normalization 与单 route chat run 执行器已实现；多 route/failover 待实现 |
+| AI | AI SDK 7；首批七种 family/protocol 文本 adapter、guarded provider transport、单 route chat run 执行器，以及 `useChat` 自定义 durable UI transport 已实现；多 route/failover 待实现 |
 | Data | Drizzle/PostgreSQL 聊天、认证与四层模型目录 schema/migration；PGlite 负责 PostgreSQL 语义集成测试 |
 | Jobs | 可插拔 JobDriver；Trigger.dev 可选，当前只有 contract |
 | UI | Tailwind CSS v4、shadcn/ui Base Rhea、Base UI、`@shadcn/react`、Streamdown |

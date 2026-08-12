@@ -21,6 +21,7 @@ import { ModelCatalogError } from "@repo/model-router";
 import { describe, expect, it } from "vitest";
 import {
   assertTrustedWriteOrigin,
+  getConversationSnapshot,
   getRunEventSnapshot,
   parseChatJsonBody,
   toChatErrorResponse,
@@ -181,6 +182,34 @@ describe("chat HTTP boundary", () => {
     expect(snapshot.run.lastEventSequence).toBe(3);
     expect(snapshot.events.map(({ sequence }) => sequence)).toEqual([2]);
     expect(snapshot.cursor).toBe(2);
+  });
+
+  it("returns only a non-terminal run associated with the active leaf", async () => {
+    const run = createRun();
+    const message = createAssistantMessage();
+    const chat = {
+      getConversation: () =>
+        Promise.resolve({
+          activeLeafMessageId: assistantMessageId,
+          archivedAt: null,
+          createdAt: now,
+          id: conversationId,
+          ownerId: ownerIdSchema.parse("owner_01"),
+          title: "Test",
+          updatedAt: now,
+        }),
+      getRunByAssistantMessage: () => Promise.resolve(run),
+      listBranchMessages: () => Promise.resolve([message]),
+    } as unknown as ChatService;
+
+    const snapshot = await getConversationSnapshot(
+      chat,
+      conversationId,
+      ownerIdSchema.parse("owner_01")
+    );
+
+    expect(snapshot.activeRun?.id).toBe(runId);
+    expect(snapshot.messages).toHaveLength(1);
   });
 });
 

@@ -1,7 +1,7 @@
 # Implementation Goals
 
 > 代码源头：`packages/chat/src/service.ts`、`packages/chat/src/run-state-machine.ts`
-> 状态：Goal 1 已完成；Goal 2 实施中，后续 Goal 均为规划。
+> 状态：Goal 1、Goal 2 已完成；Goal 3 为下一阶段，后续 Goal 均为规划。
 > 工作协议：每个可独立验收的功能通过对应检查后立即做原子提交；不跨功能堆积半成品。
 
 ## Goal 1：后端核心与数据事实层（已完成）
@@ -18,7 +18,7 @@
 
 完成证据（2026-08-12）：纯领域测试 10 项，migration/repository/service-database 集成测试 14 项；全仓格式、类型与测试通过；Vercel profile 原生 build 通过；自托管 standalone build 与 HTTP 200 smoke test 通过。GitHub Actions [CI #31606054899](https://github.com/Loosand/chat/actions/runs/31606054899) 在 Linux 上通过 quality/Vercel job，并真实 BuildKit 构建 `runner`、`migrate` 两个 Docker 发布 target。当前开发机没有 Docker CLI，因此本地未重复 image build，不能把 standalone smoke 误写成容器实机验证。首次 CI 暴露 Bun runtime 执行 Next.js Linux 构建的兼容失败；第二次 CI 证实 Corepack 不管理 Bun；最终 builder 由固定官方 image 复制 Bun 二进制做安装，并用 Node 22 直接执行 Next.js CLI。
 
-## Goal 2：身份、最小模型目录与聊天竖切（实施中）
+## Goal 2：身份、最小模型目录与聊天竖切（已完成）
 
 - Better Auth 与 owner/tenant 事实接入；首批实现邮箱/密码、邮箱验证、session 管理与 admin plugin，Organization、多因素、Passkey、SSO/OIDC 等插件按产品和 threat model 分期启用。
 - 最小 Upstream、Platform Model、Binding、Route 管理模型。
@@ -36,8 +36,11 @@
 - Goal 2.5c：Next.js 惰性 production composition、owner-scoped conversation/model/run API、strict Origin/body 边界、`after()` 执行注册、PostgreSQL checkpoint SSE cursor、刷新 snapshot 与显式 cancel；模型 bootstrap/管理和 UI 是后续独立功能。
 - Goal 2.6a：`CHAT_MODEL_*` 单文本模型 bootstrap；Vercel/Docker 复用四层目录管理用例与 secret reference，并发初始化可恢复，既有配置冲突时不自动覆盖。
 - Goal 2.6b：最薄 Better Auth 用户界面；公开登录/注册、邮箱验证反馈、防枚举密码恢复、受保护 `/chat` session gate 与当前 session 退出，使用仓库自有 shadcn/ui Base Rhea + Base UI primitive。
+- Goal 2.6c：最薄持久聊天界面；Server Component 首屏加载、AI SDK `useChat` + 自定义 durable transport、conversation 稳定 URL、Streamdown assistant、模型选择、显式 cancel、Zod response 校验、终态错误边界和 active run 刷新续接。
 
 退出条件：用户可以真实对话；刷新读取持久消息；重复 `clientRunId` 不重复执行；显式停止不依赖 Trigger。
+
+完成证据（2026-08-12）：浏览器通过真实 Better Auth session 和 OpenAI-compatible 本地流式上游完成 conversation/run 创建、checkpoint 流、URL 持久化、刷新历史恢复、运行中取消，以及 active run 刷新重订阅；刷新后的 checkpoint 文本不重复。隔离 PostgreSQL 事实核对得到 completed、cancelled、failed 三类 run/message 一致终态；临时测试数据库已在验收后删除。协议与 UI 自动测试、全仓格式/类型/测试、Vercel 原生 build 和 Docker standalone build 均作为本 Goal 提交门禁。
 
 Better Auth 的 user id 作为稳定字符串映射到聊天 `OwnerId`；`@repo/chat` 不依赖 Better Auth 类型。Vercel 与 Docker 使用同一套 auth schema，Cookie、trusted origins、base URL 和邮件通道由部署 profile 提供。
 

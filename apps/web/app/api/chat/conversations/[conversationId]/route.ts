@@ -11,11 +11,9 @@
 
 import { chatConversationPathSchema } from "@repo/contracts";
 import {
+  getConversationSnapshot,
   requireChatOwner,
   toChatErrorResponse,
-  toConversationResource,
-  toMessageResource,
-  toRunResource,
 } from "@/server/chat-http";
 import { getChatRuntime } from "@/server/chat-runtime";
 
@@ -36,30 +34,13 @@ export async function GET(
       context.params,
     ]);
     const { conversationId } = chatConversationPathSchema.parse(params);
-    const chat = getChatRuntime().chat;
-    const conversation = await chat.getConversation(conversationId, ownerId);
-    const messages = conversation.activeLeafMessageId
-      ? await chat.listBranchMessages(
-          conversation.id,
-          conversation.activeLeafMessageId,
-          ownerId
-        )
-      : [];
-    const activeRun = conversation.activeLeafMessageId
-      ? await chat.getRunByAssistantMessage(
-          conversation.activeLeafMessageId,
-          ownerId
-        )
-      : null;
-    return Response.json({
-      activeRun:
-        activeRun &&
-        ["pending", "running", "cancel_requested"].includes(activeRun.status)
-          ? toRunResource(activeRun)
-          : null,
-      conversation: toConversationResource(conversation),
-      messages: messages.map(toMessageResource),
-    });
+    return Response.json(
+      await getConversationSnapshot(
+        getChatRuntime().chat,
+        conversationId,
+        ownerId
+      )
+    );
   } catch (error) {
     return toChatErrorResponse(error);
   }
