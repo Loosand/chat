@@ -1,7 +1,7 @@
 # Model Catalog
 
 > 代码源头：`packages/contracts/src/model-catalog.ts`、`packages/model-router/src/service.ts`、`packages/model-router/src/network-policy.ts`、`packages/database/src/model-catalog-schema.ts`、`packages/database/src/model-catalog-repository.ts`
-> 状态：Goal 2.3 已实现稳定 contract、四层 PostgreSQL schema/migration、受校验 CRUD/CAS、公开目录、网络目标策略与 fail-closed 单 route 解析；管理 HTTP/UI、provider adapter 和完整路由引擎尚未实现。
+> 状态：Goal 2.3 已实现稳定 contract、四层 PostgreSQL schema/migration、受校验 CRUD/CAS、公开目录、网络目标策略与 fail-closed 单 route 解析；Goal 2.4 已实现首批文本 provider adapter；管理 HTTP/UI 和完整路由引擎尚未实现。
 > 审计日期：2026-08-12。
 
 ## 决策
@@ -36,7 +36,7 @@
 - `ModelCapability`：`version: 1` 的 task、输入/输出 modality、tools/reasoning 与可选 token 上限。
 - `SecretReference`：首期只允许引用大写环境变量名，不包含 secret value。
 
-协议标识“已登记”不代表 transport“已实现”。当前 15 个稳定标识都可被 schema 识别，但 provider adapter 尚未接入；`openai_video_generations` 尤其只能作为已知配置标识，在真正实现并通过 contract test 前不得被 resolver 判定为可用。
+协议标识“已登记”不代表 transport“已实现”。当前 15 个稳定标识都可被 schema 识别；其中 Goal 2.4 已实现 OpenAI Responses/Chat、OpenRouter Chat、Anthropic Messages、Google Generate Content、xAI Responses 和 generic OpenAI-compatible Chat。其余标识仍只有目录语义；`openai_video_generations` 尤其只能作为已知配置标识，在真正实现并通过 contract test 前不得被执行。
 
 Capability 在应用写入边界用严格 Zod schema 校验：数组不得为空或重复，未知字段会被拒绝。PostgreSQL JSONB 保存已校验的版本化快照；数据库自身负责 `NOT NULL`，不能替代应用层的结构校验。后续 schema 版本升级必须保留旧版本读取/迁移策略，不能原地改变 `version: 1` 的含义。
 
@@ -50,9 +50,9 @@ Capability 在应用写入边界用严格 Zod schema 校验：数组不得为空
 
 数据库、API、日志、route snapshot 和调试记录都不得保存解析后的 key。运行时 composition root 根据 `name` 从 server environment 读取值，再注入 `@repo/ai` adapter；浏览器永远拿不到 credential reference 或 value。多 key、加密数据库 secret 和外部 secret manager 属于 Goal 3，届时扩展为新版本/新 union member，不在现有字段里塞明文。
 
-Upstream 默认 `allow_private_network = false`。`NetworkTargetPolicy` 在 create/update 时只接受无 credentials/query/hash 的 HTTP(S) URL，规范化尾斜杠，解析全部 DNS answers，并用 `ipaddr.js` 拒绝 loopback、link-local、private、CGNAT、reserved、multicast、IPv4-mapped IPv6 等特殊范围；任一 answer 不安全即整体拒绝。只有管理员明确允许时才能跳过公共网络限制访问私网。
+Upstream 默认 `allow_private_network = false`。共享 `@repo/network-security` policy 在 create/update 时只接受无 credentials/query/hash 的 HTTP(S) URL，规范化尾斜杠，解析全部 DNS answers，并用 `ipaddr.js` 拒绝 loopback、link-local、private、CGNAT、reserved、multicast、IPv4-mapped IPv6 等特殊范围；任一 answer 不安全即整体拒绝。只有管理员明确允许时才放行 loopback/private/CGNAT/ULA；metadata/link-local 和 reserved 目标始终拒绝。
 
-这仍只是 SSRF 第一层：DNS 可能在保存后变化。Goal 2.4 provider adapter 在每次实际连接和每次 redirect 前必须重复同等 host/address 检查，并默认禁用自动 redirect；保存时通过不等于永久授权该 IP。
+Goal 2.4 已补齐运行时第二层：provider adapter 每次请求前重复 URL/DNS 检查，限制到配置 base 的同 origin/path，使用 Undici connector lookup 对同一批 DNS answers 逐个复验并直接 pin 给 socket，且固定 `redirect: manual`。保存时通过不等于永久授权该 IP；完整规则见 [`network-security.md`](./network-security.md)。
 
 ## Migration 与验证
 
@@ -80,7 +80,7 @@ Vercel 与 Docker 继续使用同一套 PostgreSQL schema 和 forward-only migra
 
 ## 下一步边界
 
-Goal 2.4 将把 `ResolvedModelRoute` 交给 AI SDK/provider adapter，并在 server composition root 解析环境 secret reference。管理 HTTP/UI 留到薄管理界面阶段。以下能力仍属 Goal 3：多 route 选择、priority group 内加权随机、最多三路 failover、key picker、两级 circuit、429 backoff、probe/debug、Vendor、Display Group、权限组和价格。
+Goal 2.4 已提供接受稳定 route 字段和运行时 secret value 的 AI SDK adapter；Goal 2.5 的 server composition root 将负责把 `ResolvedModelRoute` 转换为此输入并解析环境 secret reference。管理 HTTP/UI 留到薄管理界面阶段。以下能力仍属 Goal 3：多 route 选择、priority group 内加权随机、最多三路 failover、key picker、两级 circuit、429 backoff、probe/debug、Vendor、Display Group、权限组和价格。
 
 ## 变更协议
 

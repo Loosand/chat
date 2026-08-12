@@ -10,6 +10,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "4.0.38",
+    "@ai-sdk/google": "4.0.42",
+    "@ai-sdk/openai": "4.0.40",
+    "@ai-sdk/openai-compatible": "3.0.30",
+    "@ai-sdk/xai": "4.0.37",
+    "@repo/contracts": "workspace:*",
+    "@repo/network-security": "workspace:*",
     "ai": "^7.0.59"
   },
   "devDependencies": {

@@ -167,6 +167,7 @@ AI SDK 解决的是“怎么调用模型以及怎么消费流”，不直接解�
 - `apps/web` 使用 Next.js 16 + React 19。
 - 内部包统一 `@repo/*` 和 `workspace:*`。
 - `packages/ai` 不依赖数据库或 Trigger。
+- `packages/network-security` 提供共享 URL/DNS/连接时 SSRF 防线，不承载业务领域。
 - `packages/database` 独立管理 Drizzle。
 - `packages/storage` 封装对象存储。
 - `packages/trigger` 内含任务实现，但对其他包只公开 `./contracts`。
@@ -194,6 +195,7 @@ packages/
   cache/                       # Redis/Upstash/Memory primitives
   storage/                     # Blob/S3/Local ObjectStore adapters
   ai/                          # AI SDK providers、精确协议 adapters、usage/error normalize
+  network-security/            # URL/DNS policy、连接时 pinning、redirect 防线
   model-router/                # 平台模型、route、priority、weight、failover、circuit
   chat/                        # message tree、context、run、event、resume、feedback、share
   media/                       # image generation/edit、video generation、artifact ingest
@@ -835,6 +837,8 @@ Billing 领域包含：
 - 命中内容 AES-GCM 加密，密钥版本化；统计表只存匿名计数。
 
 ### 16.4 Secrets 与 SSRF
+
+Goal 2.4 已建立 `@repo/network-security`：模型目录保存时和 provider 请求前检查全部 DNS 结果，Node/Undici socket lookup 复验并 pin 同一批地址，provider redirect 当前 fail closed。下面的 envelope encryption、全业务 URL 接入与逐跳 redirect 仍按后续 Goal 推进。
 
 - 秘钥字段使用 envelope encryption：`key_version + nonce + ciphertext`。
 - 日志默认 redaction Authorization、Cookie、API key、signed URL 和 data URL。

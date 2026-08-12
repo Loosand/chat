@@ -5,6 +5,8 @@
 
 ## 共同原则
 
+- 本地 Node.js 最低版本为 20.18.1；共享 pinned transport 的 Undici 7 要求此下限，Docker 固定使用 Node 22。
+- 根 package override 将所有传递依赖统一到已修复的 Undici 7.29.0 与 Lodash 4.18.1；依赖升级必须重跑 High 级审计。
 - Vercel 与 Docker 共享一份源码、PostgreSQL schema 和追加式 migration 历史。
 - Web 进程和 Function 启动时不自动迁移。migration 是部署阶段的显式、可观察步骤。
 - 不把 `.env`、Vercel token、数据库凭证或 provider key 烘焙进镜像。

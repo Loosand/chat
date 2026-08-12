@@ -1,6 +1,6 @@
 # Chat
 
-Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**，正在实施 Goal 2；生产认证纵切和四层模型目录数据事实已落地，模型 CRUD、真实调用和聊天竖切仍在继续。
+Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**，正在实施 Goal 2；生产认证、四层模型目录与首批 AI SDK 文本 adapter 已落地，真实聊天竖切仍在继续。
 
 ## 一键部署
 
@@ -30,6 +30,8 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 - PostgreSQL/Drizzle 四张聊天事实表、版本化 migration、事务化 repository、幂等/CAS/owner 隔离与真实 PostgreSQL 语义集成测试。
 - Better Auth 1.6 + Drizzle/Admin 邮箱密码/验证/session/重置/封禁能力、Next.js Route Handler、Resend 邮件 adapter、数据库限流、生成式 auth schema/migration 与稳定 OwnerId 映射。
 - `@repo/model-router` 四层目录实体/管理用例、网络目标策略、公开目录和 fail-closed 单 route 解析；Drizzle CRUD/CAS/引用保护、schema/migration 与环境 secret reference。
+- `@repo/ai` 的 OpenAI Responses/Chat、OpenRouter Chat、Anthropic Messages、Google Generate Content、xAI Responses 与 generic OpenAI-compatible 文本 adapter；精确 endpoint contract、零隐式重试和稳定 usage 归一化。
+- `@repo/network-security` 的共享 URL/DNS policy 与 Node 连接时 pinned lookup；provider 请求限定同源/base-path 并禁止自动 redirect。
 - shadcn/ui Base Rhea + Base UI Chat primitives 与最小 Streamdown 渲染基线；尚未接入真实聊天流。
 - 分形文档协议及两份 DEEIX 研究基线。
 - 指向 `apps/web` 的 Vercel 一键部署入口。
@@ -38,7 +40,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 尚未实现：
 
 - 认证 UI、HTTP/streaming chat composition 和真实模型聊天流。
-- 模型管理 HTTP/UI、provider adapter、加权/failover、熔断和上游调试。
+- 模型管理 HTTP/UI、剩余文本/媒体协议、加权/failover、熔断和上游调试。
 - Trigger.dev/BullMQ worker。
 - 文件、RAG、MCP、媒体、计费和管理后台。
 - Redis/对象存储/worker 等完整部署 profile 与生产运维自动化。
@@ -49,7 +51,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 | --- | --- |
 | Monorepo | Bun 1.3、Turborepo |
 | Web | Next.js 16 App Router、React 19、Node.js runtime |
-| AI | AI SDK 7、`@ai-sdk/react` 4 已预备；稳定模型 contract/schema 已实现，provider、传输与路由待实现 |
+| AI | AI SDK 7；首批七种 family/protocol 文本 adapter、guarded transport 与 usage normalization 已实现，完整路由/事件引擎待实现 |
 | Data | Drizzle/PostgreSQL 聊天、认证与四层模型目录 schema/migration；PGlite 负责 PostgreSQL 语义集成测试 |
 | Jobs | 可插拔 JobDriver；Trigger.dev 可选，当前只有 contract |
 | UI | Tailwind CSS v4、shadcn/ui Base Rhea、Base UI、`@shadcn/react`、Streamdown |
@@ -67,6 +69,7 @@ packages/
 ├── auth/                  # Better Auth 配置、身份映射和 server/client factory
 ├── ai/                    # AI SDK 边界
 ├── model-router/          # 四层模型目录、管理规则与 route 解析
+├── network-security/      # SSRF、DNS rebinding 与 pinned fetch
 ├── database/              # PostgreSQL schema、migration 与 repository
 ├── cache/                 # 缓存/事件 primitive contract
 ├── storage/               # 对象存储 contract
@@ -89,7 +92,9 @@ docs/
 
 ## 开始开发
 
-环境要求：Bun 1.3+、Node.js 20.9+。
+环境要求：Bun 1.3+、Node.js 20.18.1+（Docker 使用 Node 22）。
+
+根依赖通过 lockfile 与安全 override 固定已修复的 Undici/Lodash 版本；升级依赖后应重新运行 `bun audit --audit-level=high`。
 
 ```bash
 cp .env.example .env

@@ -1,23 +1,38 @@
 /**
- * [INPUT]: AI SDK LanguageModel 和单条文本 prompt
- * [OUTPUT]: AI SDK streamText 的流式生成结果
- * [POS]: @repo/ai 的最小流式文本调用边界；尚不包含路由、计费或持久化
+ * [INPUT]: AI SDK LanguageModel、prompt/messages、system prompt 与可选 AbortSignal
+ * [OUTPUT]: 禁用 SDK 内部重试的 AI SDK streamText 流式生成结果
+ * [POS]: @repo/ai 的文本执行边界；route failover、计费和持久化由外层引擎负责
+ * [DOC]: docs/architecture/ai-adapters.md
  *
  * [PROTOCOL]:
  * 1. 输入、输出或 AI SDK 调用语义变化时更新此 Header。
  * 2. 修改后检查本目录 .folder.md；不得在此引入数据库或任务依赖。
  */
 
-import { type LanguageModel, streamText } from "ai";
+import { type LanguageModel, type ModelMessage, streamText } from "ai";
 
-export type StreamChatTextInput = {
+type StreamChatTextCommonInput = {
+  abortSignal?: AbortSignal;
   model: LanguageModel;
-  prompt: string;
+  system?: string;
 };
 
-export function streamChatText({
-  model,
-  prompt,
-}: StreamChatTextInput): ReturnType<typeof streamText> {
-  return streamText({ model, prompt });
+export type StreamChatTextInput = StreamChatTextCommonInput &
+  (
+    | { messages: ModelMessage[]; prompt?: never }
+    | { messages?: never; prompt: string }
+  );
+
+export function streamChatText(
+  input: StreamChatTextInput
+): ReturnType<typeof streamText> {
+  const common = {
+    abortSignal: input.abortSignal,
+    maxRetries: 0,
+    model: input.model,
+    system: input.system,
+  };
+  return "messages" in input && input.messages !== undefined
+    ? streamText({ ...common, messages: input.messages })
+    : streamText({ ...common, prompt: input.prompt });
 }

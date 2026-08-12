@@ -1,5 +1,5 @@
 {
-  "name": "@repo/model-router",
+  "name": "@repo/network-security",
   "version": "0.0.0",
   "private": true,
   "exports": {
@@ -10,9 +10,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@repo/contracts": "workspace:*",
-    "@repo/network-security": "workspace:*",
-    "zod": "^4.1.13"
+    "ipaddr.js": "2.5.0",
+    "undici": "7.29.0"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*"

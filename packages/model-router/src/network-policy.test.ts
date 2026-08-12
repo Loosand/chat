@@ -81,16 +81,18 @@ describe("model catalog network policy", () => {
     }
   });
 
-  it("permits an explicit private-network upstream without DNS lookup", async () => {
+  it("permits an explicit private-network upstream after DNS validation", async () => {
+    const resolved: string[] = [];
     const policy = createNetworkTargetPolicy({
-      resolve: () =>
-        Promise.reject(
-          new Error("DNS should not run for an explicitly allowed target")
-        ),
+      resolve: (hostname) => {
+        resolved.push(hostname);
+        return Promise.resolve(["10.0.0.4"]);
+      },
     });
 
     await expect(
       policy.validateBaseUrl("http://model-server.local:11434/v1/", true)
     ).resolves.toBe("http://model-server.local:11434/v1");
+    expect(resolved).toEqual(["model-server.local"]);
   });
 });
