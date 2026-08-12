@@ -83,6 +83,10 @@ stateDiagram-v2
 
 所有读取把 owner 纳入查询。分支读取从 leaf 按 parent 逐级读取，成本与分支深度相关，不加载整段 conversation；缺失 leaf 和 conversation 使用稳定领域错误。持久化 JSON 在 adapter 出口重新通过 contracts schema 校验，未知 driver/constraint/映射错误对外统一为净化的 `persistence_failure`。
 
+## 可执行契约
+
+Goal 1 的测试分三层：纯领域测试验证状态机和 service 命令；migration 测试在 PGlite PostgreSQL 内核从零建库并验证约束；adapter/纵向测试把真实 ChatService、repository 和 migration 数据库组合起来，覆盖事务 rollback、重复请求、并发相同 `clientRunId`、checkpoint CAS、终态竞争、owner 隔离、分支读取、事件顺序与重新装配后的恢复。测试不使用 ORM mock，也不把内存 repository 当持久化验收。
+
 ## 当前未实现
 
 - AI SDK stream、模型路由、usage normalization 和 provider trace。
