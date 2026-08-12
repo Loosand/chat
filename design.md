@@ -93,6 +93,10 @@ flowchart TB
 - Vercel Blob、S3-compatible、Local filesystem 通过 ObjectStore port 接入。
 - 所有 run、route、usage、price 和 provider identity 保存不可变快照。
 
+## 身份边界（规划）
+
+Goal 2 默认采用 Better Auth + Drizzle adapter；邮箱/密码、邮箱验证、数据库 session 与 Admin plugin 构成首期，其他插件分期启用。聊天领域只接收稳定字符串 `OwnerId`，不依赖 Better Auth 类型；Vercel 和 Docker 共享 auth schema 与版本化 migration。完整规则见 [`docs/architecture/auth.md`](./docs/architecture/auth.md)。
+
 ## 部署
 
 M0 已实现 Web 构建 profile 分离：Vercel 检测到系统变量 `VERCEL=1` 时使用平台原生 Next.js 产物；非 Vercel 环境生成 `output: standalone`，作为 Docker/自托管镜像入口。下列完整基础设施 profile 仍为规划。

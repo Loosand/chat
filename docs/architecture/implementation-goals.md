@@ -18,12 +18,16 @@
 
 ## Goal 2：身份、最小模型目录与聊天竖切（规划）
 
-- Better Auth 与 owner/tenant 事实接入。
+- Better Auth 与 owner/tenant 事实接入；首批实现邮箱/密码、邮箱验证、session 管理与 admin plugin，Organization、多因素、Passkey、SSO/OIDC 等插件按产品和 threat model 分期启用。
 - 最小 Upstream、Platform Model、Binding、Route 管理模型。
 - 首批文本协议 adapter 与 AI SDK `streamText()`。
 - Next.js Route Handler、自定义事件传输、显式 cancel、刷新读取与最薄 shadcn/ui 聊天页面。
 
 退出条件：用户可以真实对话；刷新读取持久消息；重复 `clientRunId` 不重复执行；显式停止不依赖 Trigger。
+
+Better Auth 的 user id 作为稳定字符串映射到聊天 `OwnerId`；`@repo/chat` 不依赖 Better Auth 类型。Vercel 与 Docker 使用同一套 auth schema，Cookie、trusted origins、base URL 和邮件通道由部署 profile 提供。
+
+完整边界、plugin 分期、migration 和部署安全规则见 [`auth.md`](./auth.md)。
 
 ## Goal 3：完整模型网关（规划）
 
