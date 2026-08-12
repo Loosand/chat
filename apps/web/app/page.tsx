@@ -1,7 +1,7 @@
 /**
- * [INPUT]: @repo/contracts 的项目身份与 @repo/design-system 的 Panel
- * [OUTPUT]: 展示 M0 已实现边界和下一阶段入口的静态首页
- * [POS]: Chat Web 根路由，作为工程骨架的可视化 smoke test
+ * [INPUT]: @repo/contracts 的项目身份、design-system Button/Panel 与认证路由
+ * [OUTPUT]: 展示当前已实现边界并提供登录/注册入口的静态首页
+ * [POS]: Chat Web 根路由和公开产品入口
  *
  * [PROTOCOL]:
  * 1. 首页表达的实现状态变化时更新此 Header 和页面文案。
@@ -10,6 +10,9 @@
 
 import { APP_NAME, PROJECT_STAGE } from "@repo/contracts";
 import { Panel } from "@repo/design-system";
+import { buttonVariants } from "@repo/design-system/components/button";
+import Link from "next/link";
+import { appRoute } from "@/lib/app-route";
 
 const foundations = [
   "Next.js App Router",
@@ -25,8 +28,22 @@ export default function HomePage() {
         <p className="eyebrow">{PROJECT_STAGE}</p>
         <h1>{APP_NAME}</h1>
         <p className="lede">
-          一个从简开始的多模型聊天平台。当前先建立可靠的工程边界，再逐步实现聊天、路由、文件、工具与计费。
+          一个从简开始的多模型聊天平台。认证、持久化与首个文本模型链路已经就位，聊天界面正在接入。
         </p>
+        <div className="home-actions">
+          <Link
+            className={buttonVariants({ size: "lg" })}
+            href={appRoute("/sign-in")}
+          >
+            登录
+          </Link>
+          <Link
+            className={buttonVariants({ size: "lg", variant: "outline" })}
+            href={appRoute("/sign-up")}
+          >
+            创建账户
+          </Link>
+        </div>
       </header>
 
       <div className="panel-grid">
@@ -38,10 +55,8 @@ export default function HomePage() {
           </ul>
         </Panel>
 
-        <Panel title="下一阶段">
-          <p>
-            先完成身份、平台模型和最小聊天竖切，再实现路由、熔断与刷新恢复。
-          </p>
+        <Panel title="正在完成">
+          <p>接入最薄聊天页面与真实流式回复，然后验证刷新恢复和显式停止。</p>
         </Panel>
       </div>
     </main>

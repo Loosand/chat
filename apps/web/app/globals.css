@@ -1,6 +1,6 @@
 /**
  * [INPUT]: Tailwind CSS v4、@repo/design-system 语义 token 与 Web 页面元素
- * [OUTPUT]: apps/web 的全局样式和最小首页布局
+ * [OUTPUT]: apps/web 的全局样式、首页入口、认证页面和聊天壳布局
  * [POS]: Web 样式入口，负责源码扫描并组合共享样式
  *
  * [PROTOCOL]:
@@ -46,6 +46,13 @@
   color: var(--muted-foreground);
 }
 
+.home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
 .panel-grid {
   display: grid;
   gap: 1rem;
@@ -59,6 +66,102 @@
 
 .panel-grid li + li {
   margin-top: 0.5rem;
+}
+
+.auth-shell {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.auth-wordmark {
+  width: fit-content;
+  margin-bottom: 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted-foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  text-decoration: none;
+}
+
+.auth-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 650;
+  letter-spacing: -0.025em;
+}
+
+.auth-form {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.auth-notice {
+  margin-bottom: 1.25rem;
+}
+
+.auth-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.auth-label-row {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.auth-label-row a,
+[data-slot="card-footer"] a {
+  color: var(--foreground);
+  text-underline-offset: 0.2em;
+}
+
+.auth-muted {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.auth-inline-link {
+  display: block;
+  margin-top: 0.75rem;
+}
+
+.chat-placeholder {
+  width: min(34rem, 100%);
+  padding: 2rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+}
+
+.chat-placeholder h1 {
+  margin: 0;
+  font-size: 2rem;
+  letter-spacing: -0.04em;
+}
+
+.chat-placeholder-copy {
+  margin: 1rem 0 0;
+  line-height: 1.7;
+  color: var(--muted-foreground);
+}
+
+.sign-out-control {
+  display: grid;
+  gap: 0.75rem;
+  justify-items: start;
+  margin-top: 1.5rem;
+}
+
+.auth-error-text {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--destructive);
 }
 
 @media (min-width: 48rem) {

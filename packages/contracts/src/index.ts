@@ -11,7 +11,7 @@
 import { z } from "zod";
 
 export const APP_NAME = "Chat";
-export const PROJECT_STAGE = "M0 · foundation";
+export const PROJECT_STAGE = "Goal 2 · vertical slice";
 
 export const deploymentProfileSchema = z.enum([
   "vercel-core",

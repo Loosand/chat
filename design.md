@@ -1,6 +1,6 @@
 # Chat Design Baseline
 
-> 状态：M0 已建立工程骨架；本文件中的业务架构除明确标为“已实现”的部分外均为规划。
+> 状态：M0 工程骨架与 Goal 1 已完成，Goal 2 竖切实施中；本文件中的业务架构除明确标为“已实现”的部分外均为规划。
 > 研究依据：`docs/DEEIX_FEATURE_INVENTORY.zh-CN.md`、`docs/DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md`
 
 ## 产品方向
@@ -104,9 +104,9 @@ flowchart TB
 - Vercel Blob、S3-compatible、Local filesystem 通过 ObjectStore port 接入。
 - 所有 run、route、usage、price 和 provider identity 保存不可变快照。
 
-## 身份边界（部分实现）
+## 身份边界（首期已实现）
 
-Goal 2 已固定 Better Auth 1.6 + Drizzle adapter，实现邮箱/密码、邮箱验证、数据库 session、密码重置撤销、Admin plugin、PostgreSQL 限流、Next.js Route Handler、Resend adapter、server/client factory 与唯一 `OwnerId` 映射。聊天领域只接收稳定字符串 `OwnerId`，不依赖 Better Auth 类型；Vercel 和 Docker 共享 auth schema/migration 和 session 语义。认证 UI 尚未实现。完整规则见 [`docs/architecture/auth.md`](./docs/architecture/auth.md)。
+Goal 2 已固定 Better Auth 1.6 + Drizzle adapter，实现邮箱/密码、邮箱验证、数据库 session、密码重置撤销、Admin plugin、PostgreSQL 限流、Next.js Route Handler、Resend adapter、server/client factory 与唯一 `OwnerId` 映射；最薄界面已覆盖登录、注册、验证反馈、密码恢复、受保护产品入口和退出当前 session。聊天领域只接收稳定字符串 `OwnerId`，不依赖 Better Auth 类型；Vercel 和 Docker 共享 auth schema/migration 和 session 语义。设备 session 管理和 Admin 管理 UI 仍在后续。完整规则见 [`docs/architecture/auth.md`](./docs/architecture/auth.md)。
 
 ## 部署
 

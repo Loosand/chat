@@ -1,6 +1,6 @@
 # Chat
 
-Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**，正在实施 Goal 2；生产认证、四层模型目录、首批 AI SDK 文本 adapter、可替换 chat run 执行器、HTTP/刷新恢复及单模型环境 bootstrap 已落地，最薄前端仍在继续。
+Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**，正在实施 Goal 2；生产认证及其最薄用户界面、四层模型目录、首批 AI SDK 文本 adapter、可替换 chat run 执行器、HTTP/刷新恢复及单模型环境 bootstrap 已落地，聊天界面仍在继续。
 
 ## 一键部署
 
@@ -29,6 +29,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 - `@repo/chat` 领域模型、repository ports、应用服务与显式 run 状态机。
 - PostgreSQL/Drizzle 四张聊天事实表、版本化 migration、事务化 repository、幂等/CAS/owner 隔离与真实 PostgreSQL 语义集成测试。
 - Better Auth 1.6 + Drizzle/Admin 邮箱密码/验证/session/重置/封禁能力、Next.js Route Handler、Resend 邮件 adapter、数据库限流、生成式 auth schema/migration 与稳定 OwnerId 映射。
+- 登录、注册、邮箱验证反馈、防枚举密码恢复、受保护产品入口与当前 session 退出的最薄 shadcn/ui Base Rhea 界面。
 - `@repo/model-router` 四层目录实体/管理用例、网络目标策略、公开目录和 fail-closed 单 route 解析；Drizzle CRUD/CAS/引用保护、schema/migration 与环境 secret reference。
 - `@repo/ai` 的 OpenAI Responses/Chat、OpenRouter Chat、Anthropic Messages、Google Generate Content、xAI Responses 与 generic OpenAI-compatible 文本 adapter；精确 endpoint contract、零隐式重试和稳定 usage 归一化。
 - `@repo/chat-engine` 的单 route 执行编排、无密钥 route snapshot、历史转换、AI SDK event 消费、周期 checkpoint、数据库取消监察与安全终态。
@@ -42,7 +43,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 
 尚未实现：
 
-- 认证/聊天 UI、模型管理入口和端到端真实 provider 验收。
+- 聊天 UI、模型管理入口和端到端真实 provider 验收。
 - 模型管理 HTTP/UI、剩余文本/媒体协议、加权/failover、熔断和上游调试。
 - Trigger.dev/BullMQ worker。
 - 文件、RAG、MCP、媒体、计费和管理后台。

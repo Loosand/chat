@@ -1,7 +1,7 @@
 # Authentication
 
-> 代码源头：`packages/auth/src/feature-options.ts`、`packages/auth/src/server.ts`、`packages/auth/src/identity.ts`、`packages/database/src/auth-schema.ts`、`apps/web/server/auth.ts`
-> 状态：Goal 2 身份基础已实现：Better Auth/Drizzle/Admin、生成式 schema/migration、Web Route Handler、Resend 邮件、数据库限流、session→OwnerId 与首期纵向测试；认证 UI 尚未实现。
+> 代码源头：`packages/auth/src/feature-options.ts`、`packages/auth/src/server.ts`、`packages/auth/src/identity.ts`、`packages/database/src/auth-schema.ts`、`apps/web/server/auth.ts`、`apps/web/components/auth/`
+> 状态：Goal 2 身份闭环已实现：Better Auth/Drizzle/Admin、生成式 schema/migration、Web Route Handler、Resend 邮件、数据库限流、session→OwnerId、首期纵向测试，以及邮箱登录/注册/验证/重置/退出界面。
 > 审计日期：2026-08-12。
 
 ## 决策
@@ -33,7 +33,13 @@ Chat 默认采用 Better Auth，并通过其 Drizzle adapter 复用现有 Postgr
 
 认证邮件由 Resend adapter 发送：callback 立即把 Promise 注册给 Next.js `after()`，使 Vercel Function 与 Docker server 都在响应后续命，不阻塞响应以降低时序侧信道。邮件包含一次性 URL，因此失败只作为 server-side background failure，URL 不得进入日志或响应。
 
-纵向测试通过真实 Better Auth HTTP handler 与全量 PGlite migration 覆盖：注册、重复邮箱枚举保护、未验证禁止登录、邮箱验证、登录、数据库 session、登出、session 过期、密码重置撤销旧 session、未登录/普通用户拒绝 Admin endpoint、管理员封禁与被封用户失效，以及恶意 origin 拒绝。认证页面仍属后续薄前端。
+纵向测试通过真实 Better Auth HTTP handler 与全量 PGlite migration 覆盖：注册、重复邮箱枚举保护、未验证禁止登录、邮箱验证、登录、数据库 session、登出、session 过期、密码重置撤销旧 session、未登录/普通用户拒绝 Admin endpoint、管理员封禁与被封用户失效，以及恶意 origin 拒绝。
+
+## 已实现用户界面
+
+公开首页提供登录和注册入口；`/sign-in`、`/sign-up`、`/forgot-password` 与 `/reset-password` 使用仓库自有 shadcn/ui Base Rhea + Base UI primitive。注册成功和密码重置邮件请求都使用不披露邮箱存在性的固定文案，Better Auth 原始 error message、token 和内部异常不进入页面。
+
+邮箱验证 callback 固定返回 `/sign-in?verified=1`，页面只识别该布尔标记并显示成功提示，不接受外部 redirect。登录成功固定进入 `/chat`；该 Server Component 重新读取权威数据库 session，未认证时跳回登录。退出操作只撤销当前 session 并回到登录页。完整设备 session 管理已有服务能力，但管理界面仍属后续功能。
 
 ## Schema 与 migration
 
@@ -77,6 +83,7 @@ Better Auth 官方说明 Drizzle adapter 应由 ORM 自己生成和应用 migrat
 - 未登录、普通用户、管理员的 Route Handler 权限测试通过。
 - session 到 `OwnerId` 的映射只有一个受测入口；领域层没有 Better Auth import。
 - 日志、错误、URL 和前端 payload 不暴露 session token、密码、邮件 token 或 auth secret。
+- 登录、注册、验证提示、密码恢复和当前 session 退出拥有可访问的最小页面；聊天业务仍独立演进。
 
 ## 变更协议
 
