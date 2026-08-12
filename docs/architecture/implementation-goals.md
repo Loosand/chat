@@ -29,7 +29,7 @@
 
 - Goal 2.1：Better Auth 1.6/Drizzle/Admin 首期配置、可复现 schema generation、追加 migration、server/client factory 与唯一 `OwnerId` 映射；认证 migration 通过 PGlite 集成测试。
 - Goal 2.2：邮箱密码/验证/重置/session/Admin 封禁纵向流程、PostgreSQL 限流、Next.js catch-all Route Handler、Resend + `after()` adapter 与 Vercel/Docker 环境边界；认证 UI 留到最薄前端阶段。
-- Goal 2.3a：稳定 protocol/task/provider/capability/secret reference contract，Upstream、上游模型绑定、Platform Model、Route 四层 PostgreSQL schema 与追加 migration；CRUD 和 route 解析继续实施。
+- Goal 2.3：稳定 protocol/task/provider/capability/secret reference contract，`@repo/model-router` 四层管理用例、SSRF 第一层策略、公开模型列表与 fail-closed 单 route 解析，Drizzle CRUD/CAS/引用删除和追加 migration；管理 HTTP/UI 与完整多 route 引擎不在本阶段。
 
 退出条件：用户可以真实对话；刷新读取持久消息；重复 `clientRunId` 不重复执行；显式停止不依赖 Trigger。
 

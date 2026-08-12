@@ -1,0 +1,20 @@
+{
+  "name": "@repo/model-router",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/contracts": "workspace:*",
+    "ipaddr.js": "2.5.0",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}

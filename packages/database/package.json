@@ -16,6 +16,7 @@
   "dependencies": {
     "@repo/chat": "workspace:*",
     "@repo/contracts": "workspace:*",
+    "@repo/model-router": "workspace:*",
     "drizzle-orm": "^0.45.2",
     "postgres": "^3.4.7"
   },

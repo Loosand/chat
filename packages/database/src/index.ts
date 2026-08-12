@@ -1,6 +1,6 @@
 /**
- * [INPUT]: @repo/database 内部连接工厂、ChatRepository adapter、聊天/认证/模型目录 schema
- * [OUTPUT]: 数据库 handle、连接/ChatRepository 创建 API及聊天、认证、模型目录表
+ * [INPUT]: @repo/database 内部连接工厂、Chat/ModelCatalog repository adapter 与各事实 schema
+ * [OUTPUT]: 数据库 handle、连接/repository 创建 API及聊天、认证、模型目录表
  * [POS]: database package 唯一公共导出入口
  *
  * [PROTOCOL]:
@@ -12,6 +12,7 @@ export { account, rateLimit, session, user, verification } from "./auth-schema";
 export { createDrizzleChatRepository } from "./chat-repository";
 export type { CreateDatabaseOptions, DatabaseHandle } from "./client";
 export { createDatabase } from "./client";
+export { createDrizzleModelCatalogRepository } from "./model-catalog-repository";
 export {
   llmModelRoutes,
   llmPlatformModels,

@@ -1,7 +1,7 @@
 # Model Catalog
 
-> 代码源头：`packages/contracts/src/model-catalog.ts`、`packages/database/src/model-catalog-schema.ts`
-> 状态：Goal 2.3a 已实现稳定 contract、四层 PostgreSQL schema、追加式 migration 与数据库约束测试；CRUD、可用 route 解析和 provider adapter 尚未实现。
+> 代码源头：`packages/contracts/src/model-catalog.ts`、`packages/model-router/src/service.ts`、`packages/model-router/src/network-policy.ts`、`packages/database/src/model-catalog-schema.ts`、`packages/database/src/model-catalog-repository.ts`
+> 状态：Goal 2.3 已实现稳定 contract、四层 PostgreSQL schema/migration、受校验 CRUD/CAS、公开目录、网络目标策略与 fail-closed 单 route 解析；管理 HTTP/UI、provider adapter 和完整路由引擎尚未实现。
 > 审计日期：2026-08-12。
 
 ## 决策
@@ -22,9 +22,9 @@
 | `llm_platform_models` | 用户可见稳定 key、展示字段、task、系统提示词、版本化 capability 与公开状态 |
 | `llm_model_routes` | Platform Model 到 Upstream Model 的绑定，并预留 priority、weight 和启停状态 |
 
-四表都使用 UUID 主键、`created_at`/`updated_at` 和非负 `revision`。关键业务身份使用唯一键；被 binding/route 引用的记录使用 `ON DELETE RESTRICT`，避免管理员删除配置后让已有 route 失去解释。未来删除流程必须先显式停用、解绑，再删除。
+四表都使用 UUID 主键、`created_at`/`updated_at` 和非负 `revision`。关键业务身份使用唯一键；被 binding/route 引用的记录使用 `ON DELETE RESTRICT`，避免管理员删除配置后让已有 route 失去解释。删除用例把引用冲突映射为稳定 `catalog_record_referenced`，要求管理员先显式停用、解绑，再删除。
 
-`revision` 是后续 CRUD 乐观并发的事实字段，当前数据层尚未提供更新服务。`priority` 和 `weight` 已进入 route schema 以避免下一阶段重做数据模型，但 Goal 2.3a **没有**实现加权随机、failover 或 circuit；这些属于 Goal 3。
+`revision` 驱动所有 update/delete 的 compare-and-set；不存在、过期 revision、唯一身份冲突和未知持久化错误分别映射为稳定安全错误。`priority` 和 `weight` 已进入 route schema 以避免下一阶段重做数据模型，但 Goal 2.3 **没有**实现加权随机、failover 或 circuit；这些属于 Goal 3。
 
 ## 稳定 contract
 
@@ -50,7 +50,9 @@ Capability 在应用写入边界用严格 Zod schema 校验：数组不得为空
 
 数据库、API、日志、route snapshot 和调试记录都不得保存解析后的 key。运行时 composition root 根据 `name` 从 server environment 读取值，再注入 `@repo/ai` adapter；浏览器永远拿不到 credential reference 或 value。多 key、加密数据库 secret 和外部 secret manager 属于 Goal 3，届时扩展为新版本/新 union member，不在现有字段里塞明文。
 
-Upstream 默认 `allow_private_network = false`。数据库只保存 base URL 字符串；Goal 2.3b CRUD service 必须在写入时校验 HTTP(S) origin/base path、拒绝 credentials/query/hash，并在调用前解析 DNS、阻止 loopback/link-local/private/metadata 地址以及重定向绕过。只有管理员明确允许且部署 profile 支持时才能访问私网。schema 存在该开关不等于 SSRF 防护已完成。
+Upstream 默认 `allow_private_network = false`。`NetworkTargetPolicy` 在 create/update 时只接受无 credentials/query/hash 的 HTTP(S) URL，规范化尾斜杠，解析全部 DNS answers，并用 `ipaddr.js` 拒绝 loopback、link-local、private、CGNAT、reserved、multicast、IPv4-mapped IPv6 等特殊范围；任一 answer 不安全即整体拒绝。只有管理员明确允许时才能跳过公共网络限制访问私网。
+
+这仍只是 SSRF 第一层：DNS 可能在保存后变化。Goal 2.4 provider adapter 在每次实际连接和每次 redirect 前必须重复同等 host/address 检查，并默认禁用自动 redirect；保存时通过不等于永久授权该 IP。
 
 ## Migration 与验证
 
@@ -64,9 +66,21 @@ Upstream 默认 `allow_private_network = false`。数据库只保存 base URL �
 
 Vercel 与 Docker 继续使用同一套 PostgreSQL schema 和 forward-only migration；Web 冷启动不自动迁移。
 
+## CRUD 与最小解析
+
+`@repo/model-router` 不依赖 Drizzle、AI SDK 或 Next.js：
+
+- 管理命令使用 strict Zod schema，拒绝未知字段，避免 mass assignment。
+- 创建 Binding 前要求 Upstream 存在；创建/更新 Route 前要求 Platform Model、Binding 存在且 Binding capability 包含 Platform Model task。
+- `listPublicPlatformModels()` 只返回 enabled + public 且至少有一条 route/binding/upstream 全链路 enabled 的展示/能力字段，不返回 upstream、credential reference 或系统提示词。
+- database adapter 将唯一键、CAS、引用删除和未知持久化错误映射成稳定结果；映射读取时再次校验 capability/protocol/secret reference，防止损坏 JSON 静默外泄。
+- `resolveSingleRoute()` 只在恰好一条 enabled/public/全链路 enabled 候选时成功，返回版本化 identity 快照供 run 固化；0 条报 `no_route_available`，超过 1 条报 `route_topology_not_supported`。
+
+多候选明确失败是安全退出条件，不是完整路由策略。它防止 Goal 2 阶段静默选择“第一条”而忽略管理员已经配置的 priority/weight。
+
 ## 下一步边界
 
-Goal 2.3b 将提供经过 Zod 校验的最小管理 service/repository、乐观并发更新、公开模型列表和单 route 解析；Goal 2.4 才把解析结果交给 AI SDK/provider adapter。以下能力仍属 Goal 3：多 route 选择、priority group 内加权随机、最多三路 failover、key picker、两级 circuit、429 backoff、probe/debug、Vendor、Display Group、权限组和价格。
+Goal 2.4 将把 `ResolvedModelRoute` 交给 AI SDK/provider adapter，并在 server composition root 解析环境 secret reference。管理 HTTP/UI 留到薄管理界面阶段。以下能力仍属 Goal 3：多 route 选择、priority group 内加权随机、最多三路 failover、key picker、两级 circuit、429 backoff、probe/debug、Vendor、Display Group、权限组和价格。
 
 ## 变更协议
 
