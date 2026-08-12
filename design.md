@@ -27,6 +27,7 @@ flowchart TB
   Web --> Config["@repo/next-config"]
 
   AI["@repo/ai"] --> Contracts
+  Chat["@repo/chat"] --> Contracts
   Database["@repo/database"]
   Cache["@repo/cache"]
   Storage["@repo/storage"]
@@ -69,6 +70,7 @@ flowchart TB
 | Package | 地位 | 禁止事项 |
 | --- | --- | --- |
 | `contracts` | 公共 Zod schema、稳定类型和错误码 | 不依赖框架或基础设施 |
+| `chat` | 会话/message/run 领域模型、状态机、ports 和应用服务 | 不依赖 Web、AI SDK、Drizzle、Redis 或任务实现 |
 | `ai` | AI SDK、provider 与协议适配 | 不访问数据库、计费或任务系统 |
 | `database` | Drizzle、migration、repository adapter | 不依赖 Web 组件 |
 | `cache` | Redis/Upstash/Memory primitive | 不承载业务规则 |
@@ -77,9 +79,13 @@ flowchart TB
 | `logger` | 结构化日志与未来 trace 装配 | 不替代审计和账本事实 |
 | `design-system` | Base Rhea、Base UI、Chat primitives、Streamdown、token 和基础样式 | 不包含聊天业务状态，不混用 Radix-only primitive |
 
-业务增长后再按实际依赖新增 `auth`、`model-router`、`chat`、`billing`、`files`、`rag`、`tools`、`media`、`moderation` 和 `trigger`；不提前创建空包。
+业务增长后再按实际依赖新增 `auth`、`model-router`、`billing`、`files`、`rag`、`tools`、`media`、`moderation` 和 `trigger`；不提前创建空包。`chat` 已因 Goal 1 的领域状态与 ports 建立真实职责。
 
-## 数据与运行状态（规划）
+## 数据与运行状态
+
+已实现：`@repo/contracts` 与 `@repo/chat` 已定义版本化消息内容、消息树、run/message 状态、重要事件、usage/failure 快照、repository ports 和显式 run 状态机；完整规则见 [`docs/architecture/chat-core.md`](./docs/architecture/chat-core.md)。数据库 adapter、事件存储和执行链路仍在 Goal 1 后续功能中。
+
+规划：
 
 - PostgreSQL + pgvector 是 Vercel 与 Docker Full 的生产主线。
 - SQLite + sqlite-vec 只用于 Docker Lite 单实例。

@@ -52,6 +52,17 @@
         "@repo/typescript-config": "workspace:*",
       },
     },
+    "packages/chat": {
+      "name": "@repo/chat",
+      "version": "0.0.0",
+      "dependencies": {
+        "@repo/contracts": "workspace:*",
+        "zod": "^4.1.13",
+      },
+      "devDependencies": {
+        "@repo/typescript-config": "workspace:*",
+      },
+    },
     "packages/contracts": {
       "name": "@repo/contracts",
       "version": "0.0.0",
@@ -353,6 +364,8 @@
     "@repo/ai": ["@repo/ai@workspace:packages/ai"],
 
     "@repo/cache": ["@repo/cache@workspace:packages/cache"],
+
+    "@repo/chat": ["@repo/chat@workspace:packages/chat"],
 
     "@repo/contracts": ["@repo/contracts@workspace:packages/contracts"],
 

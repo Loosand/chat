@@ -26,6 +26,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 - Next.js 16 + React 19 的 `apps/web` 最小页面。
 - TypeScript strict、Biome、Vitest 基础配置。
 - contracts、AI、database、cache、storage、jobs、logger、design-system 和共享配置 package 骨架。
+- `@repo/chat` 领域模型、repository ports、应用服务与显式 run 状态机；数据库 adapter 和真实聊天流仍在实施。
 - shadcn/ui Base Rhea + Base UI Chat primitives 与最小 Streamdown 渲染基线；尚未接入真实聊天流。
 - 分形文档协议及两份 DEEIX 研究基线。
 - 指向 `apps/web` 的 Vercel 一键部署入口。
@@ -58,6 +59,7 @@ apps/
 
 packages/
 ├── contracts/             # 无框架公共 contract
+├── chat/                  # 聊天领域、状态机、ports 与应用服务
 ├── ai/                    # AI SDK 边界
 ├── database/              # 数据库连接与未来 repository
 ├── cache/                 # 缓存/事件 primitive contract
@@ -98,6 +100,8 @@ bun run build
 ## 设计与研究入口
 
 - [当前设计基线](./design.md)
+- [长期实施 Goal](./docs/architecture/implementation-goals.md)
+- [聊天核心架构](./docs/architecture/chat-core.md)
 - [前端技术基线](./docs/architecture/frontend-stack.md)
 - [DEEIX 功能全量清单](./docs/DEEIX_FEATURE_INVENTORY.zh-CN.md)
 - [DEEIX 等价复刻与目标技术方案](./docs/DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md)

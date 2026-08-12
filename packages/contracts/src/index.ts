@@ -1,7 +1,7 @@
 /**
  * [INPUT]: 项目固定身份和允许的部署 profile 值
- * [OUTPUT]: APP_NAME、PROJECT_STAGE、DeploymentProfile schema 与类型
- * [POS]: @repo/contracts 当前唯一公共 contract 入口
+ * [OUTPUT]: 项目身份、部署 profile 与聊天领域公共 schema/type
+ * [POS]: @repo/contracts 唯一公共导出入口
  *
  * [PROTOCOL]:
  * 1. 公共常量或部署 profile 变化时更新此 Header。
@@ -21,3 +21,39 @@ export const deploymentProfileSchema = z.enum([
 ]);
 
 export type DeploymentProfile = z.infer<typeof deploymentProfileSchema>;
+
+export type {
+  ChatRunStatus,
+  ConversationId,
+  JsonValue,
+  MessageBranchReason,
+  MessageContent,
+  MessageId,
+  MessagePart,
+  MessageRole,
+  MessageStatus,
+  NormalizedUsage,
+  OwnerId,
+  RunEventType,
+  RunFailure,
+  RunId,
+  TerminalChatRunStatus,
+} from "./chat";
+export {
+  chatRunStatusSchema,
+  clientRunIdSchema,
+  conversationIdSchema,
+  jsonValueSchema,
+  messageBranchReasonSchema,
+  messageContentSchema,
+  messageIdSchema,
+  messagePartSchema,
+  messageRoleSchema,
+  messageStatusSchema,
+  normalizedUsageSchema,
+  ownerIdSchema,
+  runEventTypeSchema,
+  runFailureSchema,
+  runIdSchema,
+  terminalChatRunStatusSchema,
+} from "./chat";
