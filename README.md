@@ -1,6 +1,6 @@
 # Chat
 
-Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**，正在实施 Goal 2；生产认证、四层模型目录、首批 AI SDK 文本 adapter 与可替换 chat run 执行器已落地，HTTP/刷新恢复竖切仍在继续。
+Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**，正在实施 Goal 2；生产认证、四层模型目录、首批 AI SDK 文本 adapter、可替换 chat run 执行器及 HTTP/刷新恢复竖切已落地，模型 bootstrap 与最薄前端仍在继续。
 
 ## 一键部署
 
@@ -32,6 +32,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 - `@repo/model-router` 四层目录实体/管理用例、网络目标策略、公开目录和 fail-closed 单 route 解析；Drizzle CRUD/CAS/引用保护、schema/migration 与环境 secret reference。
 - `@repo/ai` 的 OpenAI Responses/Chat、OpenRouter Chat、Anthropic Messages、Google Generate Content、xAI Responses 与 generic OpenAI-compatible 文本 adapter；精确 endpoint contract、零隐式重试和稳定 usage 归一化。
 - `@repo/chat-engine` 的单 route 执行编排、无密钥 route snapshot、历史转换、AI SDK event 消费、周期 checkpoint、数据库取消监察与安全终态。
+- `apps/web` 的 owner-scoped conversation/model/run API、可信 Origin/有限 body、防 mass assignment、`after()` 调度、PostgreSQL checkpoint SSE、刷新 snapshot 与显式取消。
 - `@repo/network-security` 的共享 URL/DNS policy 与 Node 连接时 pinned lookup；provider 请求限定同源/base-path 并禁止自动 redirect。
 - shadcn/ui Base Rhea + Base UI Chat primitives 与最小 Streamdown 渲染基线；尚未接入真实聊天流。
 - 分形文档协议及两份 DEEIX 研究基线。
@@ -40,7 +41,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 
 尚未实现：
 
-- 认证 UI、HTTP/streaming chat composition 和真实模型聊天流。
+- 认证/聊天 UI、模型 bootstrap/管理入口和端到端真实 provider 验收。
 - 模型管理 HTTP/UI、剩余文本/媒体协议、加权/failover、熔断和上游调试。
 - Trigger.dev/BullMQ worker。
 - 文件、RAG、MCP、媒体、计费和管理后台。
@@ -141,6 +142,8 @@ POSTGRES_PASSWORD='replace-with-a-url-safe-secret' docker compose up --build
 - [当前设计基线](./design.md)
 - [长期实施 Goal](./docs/architecture/implementation-goals.md)
 - [聊天核心架构](./docs/architecture/chat-core.md)
+- [聊天执行架构](./docs/architecture/chat-execution.md)
+- [聊天 HTTP 与恢复](./docs/architecture/chat-http.md)
 - [模型目录架构](./docs/architecture/model-catalog.md)
 - [Vercel 与 Docker 部署](./docs/architecture/deployment.md)
 - [前端技术基线](./docs/architecture/frontend-stack.md)

@@ -58,6 +58,27 @@ export {
   terminalChatRunStatusSchema,
 } from "./chat";
 export type {
+  ChatApiErrorResource,
+  ChatRunResource,
+  ConversationResource,
+  ConversationSnapshotResource,
+  CreateChatConversationRequest,
+  CreateChatRunRequest,
+  MessageResource,
+  PreparedRunResource,
+  PublicModelResource,
+  RunEventResource,
+  RunEventSnapshotResource,
+  RunSnapshotResource,
+} from "./chat-api";
+export {
+  chatConversationPathSchema,
+  chatRunPathSchema,
+  createChatConversationRequestSchema,
+  createChatRunRequestSchema,
+  runEventCursorSchema,
+} from "./chat-api";
+export type {
   ModelCapability,
   ModelModality,
   ModelTask,

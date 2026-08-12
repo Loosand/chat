@@ -1,6 +1,6 @@
 # 项目概述
 
-Chat 是一个从简开始的多模型聊天平台 Monorepo。Goal 1 聊天领域/持久化，以及 Goal 2 的生产认证、模型目录、AI adapter 和 chat run 执行器已完成；当前正在实现 HTTP/刷新恢复与最薄前端。完整模型网关、计费、工具与后台仍处于后续 Goal，不得把目标设计写成已实现能力。
+Chat 是一个从简开始的多模型聊天平台 Monorepo。Goal 1 聊天领域/持久化，以及 Goal 2 的生产认证、模型目录、AI adapter、chat run 执行器和 HTTP/刷新恢复已完成；当前正在实现模型 bootstrap 与最薄前端。完整模型网关、计费、工具与后台仍处于后续 Goal，不得把目标设计写成已实现能力。
 
 产品功能事实以 `docs/DEEIX_FEATURE_INVENTORY.zh-CN.md` 为参考，目标技术方案以 `docs/DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md` 为参考，当前架构取舍以根目录 `design.md` 为准。
 

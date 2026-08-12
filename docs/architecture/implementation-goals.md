@@ -33,6 +33,7 @@
 - Goal 2.4：AI SDK 7 首批文本 adapter（OpenAI Responses/Chat、OpenRouter Chat、Anthropic Messages、Google Generate Content、xAI Responses、generic OpenAI-compatible），精确 endpoint contract、稳定 usage、零 SDK 隐式重试，以及共享 SSRF/DNS rebinding/pinned transport；Canonical 事件、错误分类与 failover 留待执行纵切/Goal 3。
 - Goal 2.5a：owner-scoped conversation/message/run 读取与幂等取消命令；取消以 PostgreSQL run 状态为权威，重复请求/终态竞态不重复写事件。
 - Goal 2.5b：`@repo/chat-engine` 单 route 文本执行器；环境 secret 仅在运行时解析，route snapshot 不含密钥，AI SDK stream 周期 checkpoint，显式 Abort 与数据库取消监察收敛到安全终态。Next.js 调度和 HTTP event transport 是下一独立功能。
+- Goal 2.5c：Next.js 惰性 production composition、owner-scoped conversation/model/run API、strict Origin/body 边界、`after()` 执行注册、PostgreSQL checkpoint SSE cursor、刷新 snapshot 与显式 cancel；模型 bootstrap/管理和 UI 是后续独立功能。
 
 退出条件：用户可以真实对话；刷新读取持久消息；重复 `clientRunId` 不重复执行；显式停止不依赖 Trigger。
 

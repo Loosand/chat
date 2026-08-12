@@ -11,13 +11,15 @@
 
 import { toOwnerId } from "@repo/auth";
 import { createChatAuth } from "@repo/auth/server";
-import { createDatabase } from "@repo/database";
+import { createDatabase, type DatabaseHandle } from "@repo/database";
 import { after } from "next/server";
 import { createResendAuthEmailDispatcher } from "./auth-email";
 import { parseAuthRuntimeConfig } from "./auth-env";
 
 type AuthRuntime = {
   auth: ReturnType<typeof createChatAuth>;
+  database: DatabaseHandle;
+  trustedOrigins: readonly string[];
 };
 
 let runtime: AuthRuntime | undefined;
@@ -43,7 +45,7 @@ export function getAuthRuntime(): AuthRuntime {
     secret: config.secret,
     trustedOrigins: config.trustedOrigins,
   });
-  runtime = { auth };
+  runtime = { auth, database, trustedOrigins: config.trustedOrigins };
   return runtime;
 }
 
