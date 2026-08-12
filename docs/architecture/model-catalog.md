@@ -80,7 +80,7 @@ Vercel 与 Docker 继续使用同一套 PostgreSQL schema 和 forward-only migra
 
 ## 下一步边界
 
-Goal 2.4 已提供接受稳定 route 字段和运行时 secret value 的 AI SDK adapter；Goal 2.5 的 server composition root 将负责把 `ResolvedModelRoute` 转换为此输入并解析环境 secret reference。管理 HTTP/UI 留到薄管理界面阶段。以下能力仍属 Goal 3：多 route 选择、priority group 内加权随机、最多三路 failover、key picker、两级 circuit、429 backoff、probe/debug、Vendor、Display Group、权限组和价格。
+Goal 2.4 已提供接受稳定 route 字段和运行时 secret value 的 AI SDK adapter；Goal 2.5 的 `@repo/chat-engine` 已把 `ResolvedModelRoute` 转为模型输入、在运行时解析环境 secret reference，并固定不含 secret value 的 route snapshot。管理 HTTP/UI 留到薄管理界面阶段。以下能力仍属 Goal 3：多 route 选择、priority group 内加权随机、最多三路 failover、key picker、两级 circuit、429 backoff、probe/debug、Vendor、Display Group、权限组和价格。
 
 ## 变更协议
 

@@ -1,7 +1,7 @@
 # AI Provider Adapters
 
 > 代码源头：`packages/ai/src/text-model-adapter.ts`、`packages/ai/src/guarded-fetch.ts`、`packages/ai/src/stream-chat-text.ts`
-> 状态：Goal 2.4 已实现首批文本 adapter、精确 endpoint contract、运行时网络防线、零隐式重试与 usage 归一化；完整事件/错误/debug/failover 引擎仍属 Goal 3。
+> 状态：Goal 2.4 已实现首批文本 adapter、精确 endpoint contract、运行时网络防线、零隐式重试与 usage 归一化；Goal 2.5 已由 `@repo/chat-engine` 接入稳定执行事件与安全错误，debug/failover 仍属 Goal 3。
 
 ## 边界
 
@@ -10,7 +10,7 @@
 1. 从 `@repo/model-router` 获取单一 `ResolvedModelRoute`。
 2. 根据 `credentialRef` 从 server environment 解析 secret value。
 3. 把稳定 route 字段、secret value 和共享 `NetworkTargetPolicy` 注入 adapter。
-4. 消费完整 AI SDK stream，并在后续 Run Engine 中转成 Canonical RunEvent、checkpoint 和 normalized failure。
+4. 由 `@repo/chat-engine` 消费完整 AI SDK stream，转换为稳定 generation event、持久 checkpoint 和 normalized failure。
 
 adapter 不读取环境，不访问数据库，也不返回 credential。model name 由目录配置提供；代码不维护会过期的厂商模型 ID allowlist。
 
@@ -32,7 +32,7 @@ adapter 不读取环境，不访问数据库，也不返回 credential。model n
 
 `streamChatText()` 接收 prompt 或 AI SDK `ModelMessage[]`、system prompt 与 `AbortSignal`，并固定 `maxRetries: 0`。一次 provider attempt 只发起一次调用；未来 route failover、attempt 上限、accepted/visible/side-effect barrier 与 429 backoff 由 Goal 3 的 Run Engine 统一决定，不能同时叠加 SDK 内部重试。
 
-函数返回 AI SDK `StreamTextResult` 给 server composition root，不直接作为浏览器协议。Goal 2.5 将持续消费 `fullStream`，转换成项目自己的有序 run events，以同时支持显式 cancel、持久 checkpoint 与刷新恢复。
+函数返回 AI SDK `StreamTextResult` 给执行层，不直接作为浏览器协议。`@repo/chat-engine` 已持续消费 AI SDK `stream`，转换为有限的 text/reasoning/finish/abort 事件并写持久 checkpoint；Next.js HTTP event transport 将从聊天事实读取，不透传 provider stream。
 
 `normalizeTextUsage()` 只输出 `@repo/contracts` 的稳定 token 字段，故意丢弃 provider raw payload。完整 raw usage、provider metadata、sanitized request/response debug 与错误分类会在 Goal 3 设计独立受控 snapshot，不能混入聊天消息或公开错误。
 
@@ -40,7 +40,7 @@ adapter 不读取环境，不访问数据库，也不返回 credential。model n
 
 provider fetch 每次请求都要求共享 target policy 复验，限定到配置 base URL 的同 origin 与 base path，并固定 manual redirect。生产默认 transport 在 socket lookup 内再次校验并 pin DNS 地址；完整规则见 [`network-security.md`](./network-security.md)。
 
-credential value 仅存在于创建 provider client 的调用栈。`AiAdapterError` 只暴露稳定 code 与固定安全 message，不携带 provider body、URL、headers 或原始 cause。AI SDK/provider 原始异常必须在未来执行边界净化后才能进入日志、事件或 API。
+credential value 仅存在于创建 provider client 的调用栈。`AiAdapterError` 只暴露稳定 code 与固定安全 message，不携带 provider body、URL、headers 或原始 cause。AI SDK/provider 原始异常由 `@repo/chat-engine` 收敛为固定失败后才能进入聊天事实；受控 debug snapshot 仍待 Goal 3。
 
 ## 验证
 

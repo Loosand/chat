@@ -1,6 +1,6 @@
 # 项目概述
 
-Chat 是一个从简开始的多模型聊天平台 Monorepo。Goal 1 聊天领域/持久化和 Goal 2 的生产认证纵切已完成；当前正在实现四层模型目录与最小真实聊天链路。完整模型网关、计费、工具与后台仍处于后续 Goal，不得把目标设计写成已实现能力。
+Chat 是一个从简开始的多模型聊天平台 Monorepo。Goal 1 聊天领域/持久化，以及 Goal 2 的生产认证、模型目录、AI adapter 和 chat run 执行器已完成；当前正在实现 HTTP/刷新恢复与最薄前端。完整模型网关、计费、工具与后台仍处于后续 Goal，不得把目标设计写成已实现能力。
 
 产品功能事实以 `docs/DEEIX_FEATURE_INVENTORY.zh-CN.md` 为参考，目标技术方案以 `docs/DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md` 为参考，当前架构取舍以根目录 `design.md` 为准。
 
@@ -20,6 +20,7 @@ Chat 是一个从简开始的多模型聊天平台 Monorepo。Goal 1 聊天领�
 - `apps/web` 是 Next.js App Router 的产品入口；默认使用 Server Component，只有交互或浏览器 API 需要时才使用 Client Component。
 - `packages/contracts` 不依赖框架或基础设施。
 - `packages/chat` 只包含聊天领域模型、状态机、ports 和应用服务，不依赖 Web、AI SDK、Drizzle、Redis 或任务实现。
+- `packages/chat-engine` 只编排聊天事实、模型 route、secret 和 AI stream，不依赖 Next.js、ORM、Redis 或任务 SDK；不得让浏览器连接拥有 run 生命周期，也不得持久化 secret/provider raw 数据。
 - `packages/auth` 只组合 Better Auth、Drizzle auth adapter、插件和身份映射；不得把 Better Auth 类型传入聊天领域，也不得在 import 阶段读取环境或连接数据库。
 - `packages/ai` 只封装 AI SDK 和 provider adapter，不访问数据库、缓存、任务系统或 Next.js；不读取环境 secret 或自行选择 route。
 - `packages/model-router` 只包含四层模型目录、管理用例、网络目标策略、resolver 与 ports，不依赖 AI SDK、Drizzle、Next.js、计费或任务实现。

@@ -91,7 +91,7 @@ Goal 1 的测试分三层：纯领域测试验证状态机和 service 命令；m
 
 ## 当前未实现
 
-- 已实现的模型 route resolver/AI SDK stream adapter 与聊天 run 的执行器装配，以及 provider trace。
+- provider trace。
 - Redis 完整短期 event replay、cancel flag 与跨实例 tail。
 - 认证身份到聊天 owner 的 Route Handler 权限装配、计费、附件所有权和聊天 UI。
 

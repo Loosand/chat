@@ -31,6 +31,9 @@ flowchart TB
   Router["@repo/model-router"] --> Contracts
   Router --> Network
   Chat["@repo/chat"] --> Contracts
+  Engine["@repo/chat-engine"] --> Chat
+  Engine --> Router
+  Engine --> AI
   Auth["@repo/auth"] --> Contracts
   Auth --> Database["@repo/database"]
   Cache["@repo/cache"]
@@ -75,6 +78,7 @@ flowchart TB
 | --- | --- | --- |
 | `contracts` | 公共 Zod schema、聊天与模型目录稳定类型和错误码 | 不依赖框架或基础设施 |
 | `chat` | 会话/message/run 领域模型、状态机、ports 和应用服务 | 不依赖 Web、AI SDK、Drizzle、Redis 或任务实现 |
+| `chat-engine` | route、secret、AI stream、checkpoint 与取消/终态的执行编排 | 不依赖 Next.js、ORM、Redis 或 Trigger，不持久化密钥/provider raw 数据 |
 | `auth` | Better Auth 功能配置、Drizzle adapter、server/client factory 与 OwnerId 映射 | 不向领域泄漏 session/plugin 类型，不在 import 阶段读取环境或连接数据库 |
 | `ai` | AI SDK、provider 与协议适配 | 不访问数据库、计费或任务系统 |
 | `model-router` | 四层模型目录、管理用例、网络目标策略与 route 解析 | 不依赖 AI SDK、Drizzle、Next.js、计费或任务实现 |
@@ -86,11 +90,11 @@ flowchart TB
 | `logger` | 结构化日志与未来 trace 装配 | 不替代审计和账本事实 |
 | `design-system` | Base Rhea、Base UI、Chat primitives、Streamdown、token 和基础样式 | 不包含聊天业务状态，不混用 Radix-only primitive |
 
-业务增长后再按实际依赖新增 `billing`、`files`、`rag`、`tools`、`media`、`moderation` 和 `trigger`；不提前创建空包。`chat` 已因 Goal 1 的领域状态与 ports 建立真实职责，`auth` 已因 Goal 2 的 Better Auth 组合和身份映射建立真实职责，`model-router` 已因 Goal 2.3 的四层目录、管理规则和单-route 解析建立真实职责，`network-security` 已因 Goal 2.4 的共享 SSRF 与连接时 DNS pinning 建立真实职责。
+业务增长后再按实际依赖新增 `billing`、`files`、`rag`、`tools`、`media`、`moderation` 和 `trigger`；不提前创建空包。`chat` 已因 Goal 1 的领域状态与 ports 建立真实职责，`auth` 已因 Goal 2 的 Better Auth 组合和身份映射建立真实职责，`model-router` 已因 Goal 2.3 的四层目录、管理规则和单-route 解析建立真实职责，`network-security` 已因 Goal 2.4 的共享 SSRF 与连接时 DNS pinning 建立真实职责，`chat-engine` 已因 Goal 2.5 的 route/secret/stream/checkpoint/cancel 编排建立真实职责。
 
 ## 数据与运行状态
 
-已实现：`@repo/contracts` 与 `@repo/chat` 已定义版本化消息内容、消息树、run/message 状态、重要事件、usage/failure 快照、repository ports 和显式 run 状态机；`@repo/database` 已提交聊天事实表、约束、migration 与事务化 repository adapter。Goal 2.3 实现稳定模型 contract、`@repo/model-router` 管理用例/fail-closed 单 route 解析，以及四层 PostgreSQL CRUD/CAS；Goal 2.4 实现首批文本 provider adapter、稳定 usage、共享 URL/DNS 安全策略和连接时 pinning。credential 仍只在目录保存环境变量引用，并由未来 composition root 在 server 内解析。完整规则见 [`docs/architecture/chat-core.md`](./docs/architecture/chat-core.md)、[`docs/architecture/model-catalog.md`](./docs/architecture/model-catalog.md)、[`docs/architecture/ai-adapters.md`](./docs/architecture/ai-adapters.md) 与 [`docs/architecture/network-security.md`](./docs/architecture/network-security.md)。管理 HTTP/UI、Canonical RunEvent 和完整 resolver/failover 仍在后续功能中。
+已实现：`@repo/contracts` 与 `@repo/chat` 已定义版本化消息内容、消息树、run/message 状态、重要事件、usage/failure 快照、repository ports 和显式 run 状态机；`@repo/database` 已提交聊天事实表、约束、migration 与事务化 repository adapter。Goal 2.3 实现稳定模型 contract、`@repo/model-router` 管理用例/fail-closed 单 route 解析，以及四层 PostgreSQL CRUD/CAS；Goal 2.4 实现首批文本 provider adapter、稳定 usage、共享 URL/DNS 安全策略和连接时 pinning；Goal 2.5 已实现 `@repo/chat-engine`，运行时解析 credential reference 并固定不含密钥的 route snapshot，消费 AI SDK stream、周期 checkpoint，同时以 AbortSignal 和数据库状态监察取消。完整规则见 [`docs/architecture/chat-core.md`](./docs/architecture/chat-core.md)、[`docs/architecture/chat-execution.md`](./docs/architecture/chat-execution.md)、[`docs/architecture/model-catalog.md`](./docs/architecture/model-catalog.md)、[`docs/architecture/ai-adapters.md`](./docs/architecture/ai-adapters.md) 与 [`docs/architecture/network-security.md`](./docs/architecture/network-security.md)。管理 HTTP/UI、Canonical HTTP 事件传输和完整 resolver/failover 仍在后续功能中。
 
 规划：
 

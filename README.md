@@ -1,6 +1,6 @@
 # Chat
 
-Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**，正在实施 Goal 2；生产认证、四层模型目录与首批 AI SDK 文本 adapter 已落地，真实聊天竖切仍在继续。
+Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**，正在实施 Goal 2；生产认证、四层模型目录、首批 AI SDK 文本 adapter 与可替换 chat run 执行器已落地，HTTP/刷新恢复竖切仍在继续。
 
 ## 一键部署
 
@@ -31,6 +31,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 - Better Auth 1.6 + Drizzle/Admin 邮箱密码/验证/session/重置/封禁能力、Next.js Route Handler、Resend 邮件 adapter、数据库限流、生成式 auth schema/migration 与稳定 OwnerId 映射。
 - `@repo/model-router` 四层目录实体/管理用例、网络目标策略、公开目录和 fail-closed 单 route 解析；Drizzle CRUD/CAS/引用保护、schema/migration 与环境 secret reference。
 - `@repo/ai` 的 OpenAI Responses/Chat、OpenRouter Chat、Anthropic Messages、Google Generate Content、xAI Responses 与 generic OpenAI-compatible 文本 adapter；精确 endpoint contract、零隐式重试和稳定 usage 归一化。
+- `@repo/chat-engine` 的单 route 执行编排、无密钥 route snapshot、历史转换、AI SDK event 消费、周期 checkpoint、数据库取消监察与安全终态。
 - `@repo/network-security` 的共享 URL/DNS policy 与 Node 连接时 pinned lookup；provider 请求限定同源/base-path 并禁止自动 redirect。
 - shadcn/ui Base Rhea + Base UI Chat primitives 与最小 Streamdown 渲染基线；尚未接入真实聊天流。
 - 分形文档协议及两份 DEEIX 研究基线。
@@ -51,7 +52,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 | --- | --- |
 | Monorepo | Bun 1.3、Turborepo |
 | Web | Next.js 16 App Router、React 19、Node.js runtime |
-| AI | AI SDK 7；首批七种 family/protocol 文本 adapter、guarded transport 与 usage normalization 已实现，完整路由/事件引擎待实现 |
+| AI | AI SDK 7；首批七种 family/protocol 文本 adapter、guarded transport、usage normalization 与单 route chat run 执行器已实现；多 route/failover 待实现 |
 | Data | Drizzle/PostgreSQL 聊天、认证与四层模型目录 schema/migration；PGlite 负责 PostgreSQL 语义集成测试 |
 | Jobs | 可插拔 JobDriver；Trigger.dev 可选，当前只有 contract |
 | UI | Tailwind CSS v4、shadcn/ui Base Rhea、Base UI、`@shadcn/react`、Streamdown |
@@ -66,8 +67,9 @@ apps/
 packages/
 ├── contracts/             # 无框架公共 contract
 ├── chat/                  # 聊天领域、状态机、ports 与应用服务
-├── auth/                  # Better Auth 配置、身份映射和 server/client factory
 ├── ai/                    # AI SDK 边界
+├── auth/                  # Better Auth 配置、身份映射和 server/client factory
+├── chat-engine/           # route、AI stream 与聊天事实的执行编排
 ├── model-router/          # 四层模型目录、管理规则与 route 解析
 ├── network-security/      # SSRF、DNS rebinding 与 pinned fetch
 ├── database/              # PostgreSQL schema、migration 与 repository

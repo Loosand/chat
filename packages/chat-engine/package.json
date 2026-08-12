@@ -1,0 +1,22 @@
+{
+  "name": "@repo/chat-engine",
+  "version": "0.0.0",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "test": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/ai": "workspace:*",
+    "@repo/chat": "workspace:*",
+    "@repo/contracts": "workspace:*",
+    "@repo/model-router": "workspace:*",
+    "ai": "^7.0.59"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}

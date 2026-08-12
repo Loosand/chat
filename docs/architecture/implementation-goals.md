@@ -31,6 +31,8 @@
 - Goal 2.2：邮箱密码/验证/重置/session/Admin 封禁纵向流程、PostgreSQL 限流、Next.js catch-all Route Handler、Resend + `after()` adapter 与 Vercel/Docker 环境边界；认证 UI 留到最薄前端阶段。
 - Goal 2.3：稳定 protocol/task/provider/capability/secret reference contract，`@repo/model-router` 四层管理用例、SSRF 第一层策略、公开模型列表与 fail-closed 单 route 解析，Drizzle CRUD/CAS/引用删除和追加 migration；管理 HTTP/UI 与完整多 route 引擎不在本阶段。
 - Goal 2.4：AI SDK 7 首批文本 adapter（OpenAI Responses/Chat、OpenRouter Chat、Anthropic Messages、Google Generate Content、xAI Responses、generic OpenAI-compatible），精确 endpoint contract、稳定 usage、零 SDK 隐式重试，以及共享 SSRF/DNS rebinding/pinned transport；Canonical 事件、错误分类与 failover 留待执行纵切/Goal 3。
+- Goal 2.5a：owner-scoped conversation/message/run 读取与幂等取消命令；取消以 PostgreSQL run 状态为权威，重复请求/终态竞态不重复写事件。
+- Goal 2.5b：`@repo/chat-engine` 单 route 文本执行器；环境 secret 仅在运行时解析，route snapshot 不含密钥，AI SDK stream 周期 checkpoint，显式 Abort 与数据库取消监察收敛到安全终态。Next.js 调度和 HTTP event transport 是下一独立功能。
 
 退出条件：用户可以真实对话；刷新读取持久消息；重复 `clientRunId` 不重复执行；显式停止不依赖 Trigger。
 
@@ -38,6 +40,7 @@ Better Auth 的 user id 作为稳定字符串映射到聊天 `OwnerId`；`@repo/
 
 完整边界、plugin 分期、migration 和部署安全规则见 [`auth.md`](./auth.md)。
 模型目录的已实现事实、安全边界和后续路由分期见 [`model-catalog.md`](./model-catalog.md)。
+聊天执行器的 route/secret/checkpoint/cancel 边界见 [`chat-execution.md`](./chat-execution.md)。
 
 ## Goal 3：完整模型网关（规划）
 
