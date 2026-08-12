@@ -1,0 +1,4 @@
+interface:
+  display_name: "React Hydration Boundaries"
+  short_description: "Avoid hydration-driven UI flicker"
+  default_prompt: "Use $react-hydration-boundaries to audit this React/Next.js page for hydration-driven flicker and client island boundaries."
