@@ -99,7 +99,7 @@ Goal 2 默认采用 Better Auth + Drizzle adapter；邮箱/密码、邮箱验证
 
 ## 部署
 
-M0 已实现 Web 构建 profile 分离：Vercel 检测到系统变量 `VERCEL=1` 时使用平台原生 Next.js 产物；非 Vercel 环境生成 `output: standalone`，作为 Docker/自托管镜像入口。下列完整基础设施 profile 仍为规划。
+Goal 1 已实现构建 profile 分离：Vercel 检测到系统变量 `VERCEL=1` 时使用平台原生 Next.js 产物；非 Vercel 环境生成 `output: standalone`。多阶段 Docker image 以非 root 用户运行 standalone server，Compose 提供 PostgreSQL、显式 migration 和 Web 健康检查。详细命令与当前能力矩阵见 [`docs/architecture/deployment.md`](./docs/architecture/deployment.md)。下列完整基础设施 profile 仍为规划。
 
 | Profile | 基础设施 | 定位 |
 | --- | --- | --- |

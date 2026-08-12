@@ -1,12 +1,12 @@
 # Chat
 
-Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库当前处于 **M0 基础骨架**：Monorepo、Next.js Web、共享 package 边界和架构文档已建立，业务功能尚未实现。
+Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台。仓库已完成 **Goal 1 后端核心与数据事实层**：聊天领域、PostgreSQL schema/migration 和事务化 repository 已建立；身份、模型调用和 Web 聊天竖切进入后续 Goal。
 
 ## 一键部署
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLoosand%2Fchat&project-name=chat&repository-name=chat&root-directory=apps%2Fweb)
 
-按钮已预设 Monorepo Root Directory 为 `apps/web`。Vercel 使用 Next.js 原生部署产物，非 Vercel 构建保留 Docker 所需的 standalone 输出。当前 M0 页面不要求环境变量；未来接入数据库、模型供应商或对象存储后，需要在 Vercel 项目中补充对应变量。
+按钮已预设 Monorepo Root Directory 为 `apps/web`。Vercel 使用 Next.js 原生部署产物，非 Vercel 构建保留 Docker 所需的 standalone 输出。当前薄页面不要求环境变量；Goal 2 接入身份与聊天 API 后需要数据库和 Better Auth 配置。
 
 ## 核心同步协议（Mandatory）
 
@@ -26,18 +26,20 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 - Next.js 16 + React 19 的 `apps/web` 最小页面。
 - TypeScript strict、Biome、Vitest 基础配置。
 - contracts、AI、database、cache、storage、jobs、logger、design-system 和共享配置 package 骨架。
-- `@repo/chat` 领域模型、repository ports、应用服务与显式 run 状态机；数据库 adapter 和真实聊天流仍在实施。
+- `@repo/chat` 领域模型、repository ports、应用服务与显式 run 状态机。
+- PostgreSQL/Drizzle 四张聊天事实表、版本化 migration、事务化 repository、幂等/CAS/owner 隔离与真实 PostgreSQL 语义集成测试。
 - shadcn/ui Base Rhea + Base UI Chat primitives 与最小 Streamdown 渲染基线；尚未接入真实聊天流。
 - 分形文档协议及两份 DEEIX 研究基线。
 - 指向 `apps/web` 的 Vercel 一键部署入口。
+- Next.js standalone 多阶段 Docker image、显式 migrate target 与 PostgreSQL Compose profile。
 
 尚未实现：
 
-- 账号、对话、消息持久化和聊天流。
+- Better Auth、HTTP/streaming composition 和真实模型聊天流。
 - 模型 provider、路由、熔断和上游调试。
 - Trigger.dev/BullMQ worker。
 - 文件、RAG、MCP、媒体、计费和管理后台。
-- Vercel/Docker 的生产级部署配置与配套基础设施。
+- Redis/对象存储/worker 等完整部署 profile 与生产运维自动化。
 
 ## 技术栈
 
@@ -46,7 +48,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 | Monorepo | Bun 1.3、Turborepo |
 | Web | Next.js 16 App Router、React 19、Node.js runtime |
 | AI | AI SDK 7、`@ai-sdk/react` 4 已预备；provider、传输与路由待实现 |
-| Data | Drizzle/PostgreSQL 为目标主线；当前只有连接边界 |
+| Data | Drizzle/PostgreSQL schema、migration 与事务化 repository；PGlite 负责 PostgreSQL 语义集成测试 |
 | Jobs | 可插拔 JobDriver；Trigger.dev 可选，当前只有 contract |
 | UI | Tailwind CSS v4、shadcn/ui Base Rhea、Base UI、`@shadcn/react`、Streamdown |
 | Quality | TypeScript strict、Biome、Vitest |
@@ -61,7 +63,7 @@ packages/
 ├── contracts/             # 无框架公共 contract
 ├── chat/                  # 聊天领域、状态机、ports 与应用服务
 ├── ai/                    # AI SDK 边界
-├── database/              # 数据库连接与未来 repository
+├── database/              # PostgreSQL schema、migration 与 repository
 ├── cache/                 # 缓存/事件 primitive contract
 ├── storage/               # 对象存储 contract
 ├── jobs/                  # 后台任务 driver contract
@@ -71,7 +73,7 @@ packages/
 └── typescript-config/     # TypeScript 共享配置
 
 docs/
-├── architecture/          # 前端技术基线与架构规则
+├── architecture/          # 身份、聊天、部署、前端与文档架构规则
 ├── DEEIX_FEATURE_INVENTORY.zh-CN.md
 └── DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md
 ```
@@ -97,11 +99,18 @@ bun run test
 bun run build
 ```
 
+Docker 本地 profile：
+
+```bash
+POSTGRES_PASSWORD='replace-with-a-url-safe-secret' docker compose up --build
+```
+
 ## 设计与研究入口
 
 - [当前设计基线](./design.md)
 - [长期实施 Goal](./docs/architecture/implementation-goals.md)
 - [聊天核心架构](./docs/architecture/chat-core.md)
+- [Vercel 与 Docker 部署](./docs/architecture/deployment.md)
 - [前端技术基线](./docs/architecture/frontend-stack.md)
 - [DEEIX 功能全量清单](./docs/DEEIX_FEATURE_INVENTORY.zh-CN.md)
 - [DEEIX 等价复刻与目标技术方案](./docs/DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md)

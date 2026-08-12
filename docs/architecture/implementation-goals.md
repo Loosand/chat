@@ -1,10 +1,10 @@
 # Implementation Goals
 
 > 代码源头：`packages/chat/src/service.ts`、`packages/chat/src/run-state-machine.ts`
-> 状态：Goal 1 实施中；后续 Goal 均为规划。
+> 状态：Goal 1 已完成；Goal 2 待实施，后续 Goal 均为规划。
 > 工作协议：每个可独立验收的功能通过对应检查后立即做原子提交；不跨功能堆积半成品。
 
-## Goal 1：后端核心与数据事实层（实施中）
+## Goal 1：后端核心与数据事实层（已完成）
 
 范围：
 
@@ -15,6 +15,8 @@
 - 领域与真实 PostgreSQL 兼容集成测试。
 
 退出条件：领域不变量、migration、repository contract、格式、类型、测试以及 Vercel/Docker 两类构建全部通过。Goal 1 不包含身份、模型调用、Route Handler、Redis 或 Trigger。
+
+完成证据（2026-08-12）：纯领域测试 10 项，migration/repository/service-database 集成测试 14 项；全仓格式、类型与测试通过；Vercel profile 原生 build 通过；自托管 standalone build 与 HTTP 200 smoke test 通过；Docker runner 真实 BuildKit build 进入受 SHA 固定 action 的 CI 门禁。当前开发机没有 Docker CLI，因此本地未重复 image build，不能把 standalone smoke 误写成容器实机验证。
 
 ## Goal 2：身份、最小模型目录与聊天竖切（规划）
 
