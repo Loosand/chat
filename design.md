@@ -97,7 +97,7 @@ flowchart TB
 
 ## 身份边界（部分实现）
 
-Goal 2 已固定 Better Auth 1.6 + Drizzle adapter，提交邮箱/密码、邮箱验证、数据库 session、Admin plugin 的统一生成/运行配置、server/client factory、`OwnerId` 映射、四张认证表与追加 migration。聊天领域只接收稳定字符串 `OwnerId`，不依赖 Better Auth 类型；Vercel 和 Docker 共享 auth schema 与版本化 migration。Next.js Route Handler、生产邮件 adapter、登录/session 权限集成测试仍待下一个功能。完整规则见 [`docs/architecture/auth.md`](./docs/architecture/auth.md)。
+Goal 2 已固定 Better Auth 1.6 + Drizzle adapter，实现邮箱/密码、邮箱验证、数据库 session、密码重置撤销、Admin plugin、PostgreSQL 限流、Next.js Route Handler、Resend adapter、server/client factory 与唯一 `OwnerId` 映射。聊天领域只接收稳定字符串 `OwnerId`，不依赖 Better Auth 类型；Vercel 和 Docker 共享 auth schema/migration 和 session 语义。认证 UI 尚未实现。完整规则见 [`docs/architecture/auth.md`](./docs/architecture/auth.md)。
 
 ## 部署
 

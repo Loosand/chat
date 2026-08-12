@@ -38,8 +38,8 @@ const targetOutput = resolve(
   "../database/src/auth-schema.ts"
 );
 const header = `/**
- * [INPUT]: Better Auth 1.6 core schema、邮箱密码能力与 Admin plugin
- * [OUTPUT]: user、session、account、verification 表及 Drizzle relations
+ * [INPUT]: Better Auth 1.6 core schema、邮箱密码、数据库限流与 Admin plugin
+ * [OUTPUT]: user、session、account、verification、rate_limit 表及 Drizzle relations
  * [POS]: @repo/database 的生成式认证 schema 事实源
  * [DOC]: docs/architecture/auth.md
  *

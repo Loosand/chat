@@ -13,6 +13,7 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import {
   account,
   accountRelations,
+  rateLimit,
   session,
   sessionRelations,
   user,
@@ -27,6 +28,7 @@ import {
 } from "./feature-options";
 
 const createChatAuthOptionsSchema = z.object({
+  adminUserIds: z.array(z.string().uuid()).optional(),
   baseURL: z.string().url(),
   secret: z.string().min(32),
   trustedOrigins: z.array(z.string().url()),
@@ -36,6 +38,7 @@ type DrizzleDatabase = Parameters<typeof drizzleAdapter>[0];
 const authSchema = {
   account,
   accountRelations,
+  rateLimit,
   session,
   sessionRelations,
   user,
@@ -44,6 +47,7 @@ const authSchema = {
 };
 
 export type CreateChatAuthOptions = {
+  adminUserIds?: readonly string[];
   baseURL: string;
   database: DrizzleDatabase;
   emailDispatcher: AuthEmailDispatcher;
@@ -53,13 +57,17 @@ export type CreateChatAuthOptions = {
 
 export function createChatAuth(options: CreateChatAuthOptions) {
   const runtime = createChatAuthOptionsSchema.parse({
+    adminUserIds: options.adminUserIds,
     baseURL: options.baseURL,
     secret: options.secret,
     trustedOrigins: options.trustedOrigins,
   });
 
   return betterAuth({
-    ...createAuthFeatureOptions(options.emailDispatcher),
+    ...createAuthFeatureOptions({
+      adminUserIds: runtime.adminUserIds,
+      emailDispatcher: options.emailDispatcher,
+    }),
     baseURL: runtime.baseURL,
     database: drizzleAdapter(options.database, {
       provider: "pg",

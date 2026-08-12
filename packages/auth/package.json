@@ -21,6 +21,7 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.4",
     "@repo/typescript-config": "workspace:*",
     "auth": "1.6.27",
     "react": "19.2.4"

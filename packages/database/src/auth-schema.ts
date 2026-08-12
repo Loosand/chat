@@ -1,6 +1,6 @@
 /**
- * [INPUT]: Better Auth 1.6 core schema、邮箱密码能力与 Admin plugin
- * [OUTPUT]: user、session、account、verification 表及 Drizzle relations
+ * [INPUT]: Better Auth 1.6 core schema、邮箱密码、数据库限流与 Admin plugin
+ * [OUTPUT]: user、session、account、verification、rate_limit 表及 Drizzle relations
  * [POS]: @repo/database 的生成式认证 schema 事实源
  * [DOC]: docs/architecture/auth.md
  *
@@ -11,8 +11,10 @@
 
 import { relations, sql } from "drizzle-orm";
 import {
+  bigint,
   boolean,
   index,
+  integer,
   pgTable,
   text,
   timestamp,
@@ -95,6 +97,13 @@ export const verification = pgTable(
   },
   (table) => [index("verification_identifier_idx").on(table.identifier)]
 );
+
+export const rateLimit = pgTable("rate_limit", {
+  id: uuid("id").default(sql`pg_catalog.gen_random_uuid()`).primaryKey(),
+  key: text("key").notNull().unique(),
+  count: integer("count").notNull(),
+  lastRequest: bigint("last_request", { mode: "number" }).notNull(),
+});
 
 export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),

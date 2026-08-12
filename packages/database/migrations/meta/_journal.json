@@ -15,6 +15,13 @@
       "when": 1786545395176,
       "tag": "0001_wandering_toro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786546184616,
+      "tag": "0002_steep_lady_deathstrike",
+      "breakpoints": true
     }
   ]
 }

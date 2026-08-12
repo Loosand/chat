@@ -13,6 +13,8 @@ import { betterAuth } from "better-auth/minimal";
 import { createAuthFeatureOptions } from "./src/feature-options";
 
 export const auth = betterAuth({
-  ...createAuthFeatureOptions({ dispatch: () => undefined }),
+  ...createAuthFeatureOptions({
+    emailDispatcher: { dispatch: () => undefined },
+  }),
   baseURL: "http://localhost:3000",
 });

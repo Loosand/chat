@@ -29,6 +29,7 @@ describe("createChatAuth", () => {
     handles.push(database);
 
     const auth = createChatAuth({
+      adminUserIds: ["00000000-0000-4000-8000-000000000101"],
       baseURL: "https://chat.example.com",
       database: database.database,
       emailDispatcher: { dispatch: () => undefined },

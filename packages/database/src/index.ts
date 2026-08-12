@@ -8,8 +8,8 @@
  * 2. 修改后同步本目录 .folder.md 和所有调用方。
  */
 
-export { account, session, user, verification } from "./auth-schema";
+export { account, rateLimit, session, user, verification } from "./auth-schema";
 export { createDrizzleChatRepository } from "./chat-repository";
-export type { DatabaseHandle } from "./client";
+export type { CreateDatabaseOptions, DatabaseHandle } from "./client";
 export { createDatabase } from "./client";
 export { chatRunEvents, chatRuns, conversations, messages } from "./schema";

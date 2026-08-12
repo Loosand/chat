@@ -28,6 +28,7 @@
 已完成的独立功能：
 
 - Goal 2.1：Better Auth 1.6/Drizzle/Admin 首期配置、可复现 schema generation、追加 migration、server/client factory 与唯一 `OwnerId` 映射；认证 migration 通过 PGlite 集成测试。
+- Goal 2.2：邮箱密码/验证/重置/session/Admin 封禁纵向流程、PostgreSQL 限流、Next.js catch-all Route Handler、Resend + `after()` adapter 与 Vercel/Docker 环境边界；认证 UI 留到最薄前端阶段。
 
 退出条件：用户可以真实对话；刷新读取持久消息；重复 `clientRunId` 不重复执行；显式停止不依赖 Trigger。
 

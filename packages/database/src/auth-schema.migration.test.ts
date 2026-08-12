@@ -1,6 +1,6 @@
 /**
  * [INPUT]: Better Auth 生成式 Drizzle schema、追加 migration 与 PGlite PostgreSQL 内核
- * [OUTPUT]: core/Admin 表、UUID、唯一键和账号级联删除的集成回归覆盖
+ * [OUTPUT]: core/Admin/限流表、UUID、唯一键和账号级联删除的集成回归覆盖
  * [POS]: @repo/database 认证 schema/migration 的可执行数据库规范
  * [DOC]: docs/architecture/auth.md
  *
@@ -18,6 +18,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 const migrationsFolder = join(process.cwd(), "migrations");
 const duplicateEmailPattern = /user_email_unique/;
 const duplicateSessionTokenPattern = /session_token_unique/;
+const duplicateRateLimitKeyPattern = /rate_limit_key_unique/;
 const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -126,5 +127,19 @@ describe("Better Auth migration", () => {
     `);
 
     expect(remaining.rows[0]?.count).toBe(0);
+  });
+
+  it("persists rate limit counters with one row per key", async () => {
+    await client.exec(`
+      insert into rate_limit (key, count, last_request)
+      values ('127.0.0.1:/sign-in/email', 1, 1000)
+    `);
+
+    await expect(
+      client.exec(`
+        insert into rate_limit (key, count, last_request)
+        values ('127.0.0.1:/sign-in/email', 2, 1001)
+      `)
+    ).rejects.toThrow(duplicateRateLimitKeyPattern);
   });
 });

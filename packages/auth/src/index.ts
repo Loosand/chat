@@ -12,5 +12,6 @@
 export type {
   AuthEmailDispatcher,
   AuthEmailMessage,
+  AuthFeatureConfig,
 } from "./feature-options";
 export { type AuthIdentity, toOwnerId } from "./identity";

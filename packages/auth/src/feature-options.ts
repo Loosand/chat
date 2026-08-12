@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 认证邮件发送 port
- * [OUTPUT]: 邮箱密码、邮箱验证、UUID identity 与 Admin plugin 的统一 Better Auth options
+ * [OUTPUT]: 邮箱密码、邮箱验证、UUID identity、数据库限流与 Admin plugin 的统一 Better Auth options
  * [POS]: @repo/auth 的首期认证能力事实源，供 CLI 与运行时共同组合
  * [DOC]: docs/architecture/auth.md
  *
@@ -30,18 +30,35 @@ export type AuthEmailDispatcher = {
   dispatch(message: AuthEmailMessage, request?: Request): void;
 };
 
-export function createAuthFeatureOptions(emailDispatcher: AuthEmailDispatcher) {
+export type AuthFeatureConfig = {
+  adminUserIds?: string[];
+  emailDispatcher: AuthEmailDispatcher;
+};
+
+export function createAuthFeatureOptions(config: AuthFeatureConfig) {
   return {
     advanced: {
+      disableCSRFCheck: false,
+      disableOriginCheck: false,
       database: {
         generateId: "uuid",
       },
     },
     emailAndPassword: {
+      customSyntheticUser: ({ additionalFields, coreFields, id }) => ({
+        ...coreFields,
+        role: "user",
+        banned: false,
+        banReason: null,
+        banExpires: null,
+        ...additionalFields,
+        id,
+      }),
       enabled: true,
       requireEmailVerification: true,
+      revokeSessionsOnPasswordReset: true,
       sendResetPassword: ({ url, user }, request) => {
-        emailDispatcher.dispatch(
+        config.emailDispatcher.dispatch(
           {
             kind: "password-reset",
             recipient: user.email,
@@ -57,7 +74,7 @@ export function createAuthFeatureOptions(emailDispatcher: AuthEmailDispatcher) {
       sendOnSignIn: true,
       sendOnSignUp: true,
       sendVerificationEmail: ({ url, user }, request) => {
-        emailDispatcher.dispatch(
+        config.emailDispatcher.dispatch(
           {
             kind: "verification",
             recipient: user.email,
@@ -69,6 +86,10 @@ export function createAuthFeatureOptions(emailDispatcher: AuthEmailDispatcher) {
         return Promise.resolve();
       },
     },
-    plugins: [admin()],
+    plugins: [admin({ adminUserIds: config.adminUserIds })],
+    rateLimit: {
+      enabled: true,
+      storage: "database",
+    },
   } satisfies BetterAuthOptions;
 }

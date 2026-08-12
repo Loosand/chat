@@ -7,17 +7,42 @@
     "build": {
       "dependsOn": ["^build"],
       "env": [
+        "AUTH_EMAIL_FROM",
+        "BETTER_AUTH_ADMIN_USER_IDS",
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_TRUSTED_ORIGINS",
+        "BETTER_AUTH_URL",
         "DATABASE_URL",
+        "DATABASE_POOL_MAX",
         "JOB_DRIVER",
         "REDIS_URL",
+        "RESEND_API_KEY",
         "STORAGE_DRIVER",
-        "VERCEL"
+        "VERCEL",
+        "VERCEL_ENV",
+        "VERCEL_PROJECT_PRODUCTION_URL",
+        "VERCEL_URL"
       ],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
       "cache": false,
-      "env": ["DATABASE_URL", "JOB_DRIVER", "REDIS_URL", "STORAGE_DRIVER"],
+      "env": [
+        "AUTH_EMAIL_FROM",
+        "BETTER_AUTH_ADMIN_USER_IDS",
+        "BETTER_AUTH_SECRET",
+        "BETTER_AUTH_TRUSTED_ORIGINS",
+        "BETTER_AUTH_URL",
+        "DATABASE_URL",
+        "DATABASE_POOL_MAX",
+        "JOB_DRIVER",
+        "REDIS_URL",
+        "RESEND_API_KEY",
+        "STORAGE_DRIVER",
+        "VERCEL_ENV",
+        "VERCEL_PROJECT_PRODUCTION_URL",
+        "VERCEL_URL"
+      ],
       "persistent": true
     },
     "test": {

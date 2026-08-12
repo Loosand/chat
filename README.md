@@ -4,9 +4,9 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 
 ## 一键部署
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLoosand%2Fchat&project-name=chat&repository-name=chat&root-directory=apps%2Fweb)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FLoosand%2Fchat&project-name=chat&repository-name=chat&root-directory=apps%2Fweb&env=DATABASE_URL,BETTER_AUTH_SECRET,RESEND_API_KEY,AUTH_EMAIL_FROM&envDescription=PostgreSQL%E3%80%81Better+Auth+%E4%B8%8E+Resend+%E6%98%AF%E6%B3%A8%E5%86%8C%E7%99%BB%E5%BD%95%E5%BF%85%E9%9C%80%E9%85%8D%E7%BD%AE%E3%80%82BETTER_AUTH_SECRET+%E8%AF%B7%E4%BD%BF%E7%94%A8+openssl+rand+-base64+32+%E7%94%9F%E6%88%90%EF%BC%9B%E9%83%A8%E7%BD%B2%E5%90%8E%E6%98%BE%E5%BC%8F%E8%BF%90%E8%A1%8C%E6%95%B0%E6%8D%AE%E5%BA%93+migration%E3%80%82&envLink=https%3A%2F%2Fgithub.com%2FLoosand%2Fchat%23%E7%8E%AF%E5%A2%83%E5%8F%98%E9%87%8F)
 
-按钮已预设 Monorepo Root Directory 为 `apps/web`。Vercel 使用 Next.js 原生部署产物，非 Vercel 构建保留 Docker 所需的 standalone 输出。当前薄页面不要求环境变量；Goal 2 接入身份与聊天 API 后需要数据库和 Better Auth 配置。
+按钮已预设 Monorepo Root Directory 为 `apps/web`，并要求填写当前认证运行所需的 PostgreSQL、Better Auth 与 Resend 配置。Vercel 使用 Next.js 原生部署产物，非 Vercel 构建保留 Docker 所需的 standalone 输出。数据库 migration 仍需在受控发布步骤显式执行，不在 Function 冷启动时自动运行。
 
 ## 核心同步协议（Mandatory）
 
@@ -28,7 +28,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 - contracts、AI、database、cache、storage、jobs、logger、design-system 和共享配置 package 骨架。
 - `@repo/chat` 领域模型、repository ports、应用服务与显式 run 状态机。
 - PostgreSQL/Drizzle 四张聊天事实表、版本化 migration、事务化 repository、幂等/CAS/owner 隔离与真实 PostgreSQL 语义集成测试。
-- Better Auth 1.6 + Drizzle/Admin 首期配置、server/client factory、生成式四表 auth schema、追加 migration 与稳定 OwnerId 映射。
+- Better Auth 1.6 + Drizzle/Admin 邮箱密码/验证/session/重置/封禁能力、Next.js Route Handler、Resend 邮件 adapter、数据库限流、生成式 auth schema/migration 与稳定 OwnerId 映射。
 - shadcn/ui Base Rhea + Base UI Chat primitives 与最小 Streamdown 渲染基线；尚未接入真实聊天流。
 - 分形文档协议及两份 DEEIX 研究基线。
 - 指向 `apps/web` 的 Vercel 一键部署入口。
@@ -36,7 +36,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 
 尚未实现：
 
-- Better Auth Web Route Handler、真实邮件发送/认证流程、HTTP/streaming composition 和真实模型聊天流。
+- 认证 UI、HTTP/streaming chat composition 和真实模型聊天流。
 - 模型 provider、路由、熔断和上游调试。
 - Trigger.dev/BullMQ worker。
 - 文件、RAG、MCP、媒体、计费和管理后台。
@@ -94,6 +94,23 @@ cp .env.example .env
 bun install
 bun run dev
 ```
+
+## 环境变量
+
+当前认证 API 在首次请求时要求：
+
+| 变量 | 必需 | 说明 |
+| --- | --- | --- |
+| `DATABASE_URL` | 是 | PostgreSQL 连接；Vercel 可使用 Neon，Docker Compose 自动注入内部地址 |
+| `DATABASE_POOL_MAX` | 否 | 每实例连接池上限；默认 Vercel 1、Docker/本地 5，可设 1–20 |
+| `BETTER_AUTH_SECRET` | 是 | 至少 32 字符，使用 `openssl rand -base64 32` 生成 |
+| `BETTER_AUTH_URL` | Docker/本地是 | 公开 origin；Vercel Production/Preview 可从平台精确 URL 推导，也可显式覆盖 |
+| `RESEND_API_KEY` | 是 | Resend server-side API key |
+| `AUTH_EMAIL_FROM` | 是 | 已验证发件人，例如 `Chat <auth@example.com>` |
+| `BETTER_AUTH_TRUSTED_ORIGINS` | 否 | 额外精确 origin，逗号分隔；不接受 wildcard |
+| `BETTER_AUTH_ADMIN_USER_IDS` | 否 | 预置管理员 UUID，逗号分隔；也可在数据库受控赋予 `admin` role |
+
+复制 `.env.example` 后填值。schema 不会在 Web 进程启动时自动迁移：本地/受控发布使用 `bun run --cwd packages/database db:migrate`，Compose 由独立 `migrate` service 执行。
 
 提交前运行：
 
