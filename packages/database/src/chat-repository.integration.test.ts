@@ -280,6 +280,12 @@ describe("Drizzle ChatRepository", () => {
       })
     ).rejects.toMatchObject({ code: "concurrent_run_update" });
     expect(await repository.findRunForOwner(runId, otherOwnerId)).toBeNull();
+    expect(
+      await repository.findConversationForOwner(conversationId, otherOwnerId)
+    ).toBeNull();
+    expect(
+      await repository.findMessageForOwner(assistantMessageId, otherOwnerId)
+    ).toBeNull();
     await expect(
       repository.listRunEvents(runId, otherOwnerId, 0)
     ).rejects.toMatchObject({ code: "run_not_found" });
@@ -290,6 +296,49 @@ describe("Drizzle ChatRepository", () => {
         otherOwnerId
       )
     ).rejects.toMatchObject({ code: "conversation_not_found" });
+  });
+
+  it("requests cancellation atomically and treats retries or terminal races as reads", async () => {
+    await repository.createRunTurn(createTurn());
+
+    const requested = await repository.requestRunCancellation({
+      at: later,
+      data: { eventType: "run.cancel.requested", source: "test" },
+      ownerId,
+      runId,
+    });
+    expect(requested).toMatchObject({
+      cancelRequestedAt: later,
+      lastEventSequence: 2,
+      status: "cancel_requested",
+      version: 1,
+    });
+
+    const retry = await repository.requestRunCancellation({
+      at: latest,
+      data: { eventType: "run.cancel.requested" },
+      ownerId,
+      runId,
+    });
+    expect(retry).toEqual(requested);
+    expect(await repository.listRunEvents(runId, ownerId, 0)).toHaveLength(2);
+
+    const cancelled = await repository.transitionRun({
+      at: latest,
+      data: { eventType: "run.cancelled" },
+      expectedStatus: "cancel_requested",
+      ownerId,
+      runId,
+      status: "cancelled",
+    });
+    const afterTerminal = await repository.requestRunCancellation({
+      at: new Date("2026-08-12T00:00:20.000Z"),
+      data: {},
+      ownerId,
+      runId,
+    });
+    expect(afterTerminal).toEqual(cancelled);
+    expect(await repository.listRunEvents(runId, ownerId, 0)).toHaveLength(3);
   });
 
   it("returns one root-to-leaf branch without siblings", async () => {

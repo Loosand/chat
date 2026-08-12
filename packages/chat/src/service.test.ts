@@ -120,6 +120,54 @@ describe("chat service", () => {
       status: "completed",
     });
   });
+
+  it("delegates idempotent cancellation as one repository command", async () => {
+    let received:
+      | Parameters<ChatRepository["requestRunCancellation"]>[0]
+      | undefined;
+    const repository = createRepositoryFake({
+      requestRunCancellation(input) {
+        received = input;
+        return Promise.resolve(createRun("cancel_requested"));
+      },
+    });
+
+    await createService(repository).requestCancel({
+      data: { source: "user" },
+      ownerId,
+      runId,
+    });
+
+    expect(received).toEqual({
+      at: now,
+      data: { eventType: "run.cancel.requested", source: "user" },
+      ownerId,
+      runId,
+    });
+  });
+
+  it("returns owner-scoped facts and hides missing records behind stable errors", async () => {
+    const run = createRun("running");
+    const repository = createRepositoryFake({
+      findConversationForOwner: () => Promise.resolve(null),
+      findMessageForOwner: () =>
+        Promise.resolve({ id: assistantMessageId } as never),
+      findRunForOwner: () => Promise.resolve(run),
+    });
+    const service = createService(repository);
+
+    await expect(
+      service.getConversation(conversationId, ownerId)
+    ).rejects.toMatchObject({
+      code: "conversation_not_found",
+    });
+    await expect(
+      service.getMessage(assistantMessageId, ownerId)
+    ).resolves.toMatchObject({
+      id: assistantMessageId,
+    });
+    await expect(service.getRun(runId, ownerId)).resolves.toBe(run);
+  });
 });
 
 function createService(repository: ChatRepository) {
@@ -178,9 +226,12 @@ function createRepositoryFake(
     checkpointAssistant: notImplemented,
     createConversation: notImplemented,
     createRunTurn: notImplemented,
+    findConversationForOwner: notImplemented,
+    findMessageForOwner: notImplemented,
     findRunForOwner: notImplemented,
     listBranchMessages: notImplemented,
     listRunEvents: notImplemented,
+    requestRunCancellation: notImplemented,
     transitionRun: notImplemented,
     ...overrides,
   };

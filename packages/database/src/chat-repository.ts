@@ -158,6 +158,40 @@ export function createDrizzleChatRepository<
       });
     },
 
+    findConversationForOwner(conversationId, ownerId) {
+      return withPersistenceBoundary(async () => {
+        const [row] = await database
+          .select()
+          .from(conversations)
+          .where(
+            and(
+              eq(conversations.id, conversationId),
+              eq(conversations.ownerId, ownerId)
+            )
+          )
+          .limit(1);
+        return row ? mapConversation(row) : null;
+      });
+    },
+
+    findMessageForOwner(messageId, ownerId) {
+      return withPersistenceBoundary(async () => {
+        const [row] = await database
+          .select({ message: messages })
+          .from(messages)
+          .innerJoin(
+            conversations,
+            and(
+              eq(conversations.id, messages.conversationId),
+              eq(conversations.ownerId, ownerId)
+            )
+          )
+          .where(eq(messages.id, messageId))
+          .limit(1);
+        return row ? mapMessage(row.message) : null;
+      });
+    },
+
     findRunForOwner(runId, ownerId) {
       return withPersistenceBoundary(() => findRun(database, runId, ownerId));
     },
@@ -204,6 +238,60 @@ export function createDrizzleChatRepository<
           .orderBy(asc(chatRunEvents.sequence));
         return rows.map(mapRunEvent);
       });
+    },
+
+    requestRunCancellation(input) {
+      return withPersistenceBoundary(() =>
+        database.transaction(async (transaction) => {
+          const [updatedRun] = await transaction
+            .update(chatRuns)
+            .set({
+              cancelRequestedAt: input.at,
+              lastEventSequence: sql`${chatRuns.lastEventSequence} + 1`,
+              status: "cancel_requested",
+              updatedAt: input.at,
+              version: sql`${chatRuns.version} + 1`,
+            })
+            .where(
+              and(
+                eq(chatRuns.id, input.runId),
+                eq(chatRuns.ownerId, input.ownerId),
+                inArray(chatRuns.status, ["pending", "running"])
+              )
+            )
+            .returning();
+
+          if (!updatedRun) {
+            const current = await findRun(
+              transaction,
+              input.runId,
+              input.ownerId
+            );
+            if (!current) {
+              throw new ChatDomainError(
+                "run_not_found",
+                "Chat run was not found."
+              );
+            }
+            return current;
+          }
+
+          await transaction
+            .update(messages)
+            .set({ status: "streaming", updatedAt: input.at })
+            .where(eq(messages.id, updatedRun.assistantMessageId));
+
+          await transaction.insert(chatRunEvents).values({
+            at: input.at,
+            data: input.data,
+            runId: updatedRun.id,
+            sequence: updatedRun.lastEventSequence,
+            type: "run.cancel.requested",
+          });
+
+          return mapRun(updatedRun);
+        })
+      );
     },
 
     transitionRun(input) {

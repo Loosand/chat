@@ -84,16 +84,39 @@ const checkpointInputSchema = z.object({
   usage: normalizedUsageSchema.optional(),
 });
 
+const ownerScopedConversationSchema = z.object({
+  conversationId: conversationIdSchema,
+  ownerId: ownerIdSchema,
+});
+const ownerScopedMessageSchema = z.object({
+  messageId: messageIdSchema,
+  ownerId: ownerIdSchema,
+});
+const ownerScopedRunSchema = z.object({
+  ownerId: ownerIdSchema,
+  runId: runIdSchema,
+});
+const requestCancelInputSchema = ownerScopedRunSchema.extend({
+  data: jsonValueSchema.default({}),
+});
+
 export type CreateConversationInput = z.input<
   typeof createConversationInputSchema
 >;
 export type PrepareRunInput = z.input<typeof prepareRunInputSchema>;
 export type TransitionRunInput = z.input<typeof transitionRunInputSchema>;
 export type CheckpointAssistantInput = z.input<typeof checkpointInputSchema>;
+export type RequestCancelInput = z.input<typeof requestCancelInputSchema>;
 
 export type ChatService = {
   checkpointAssistant(input: CheckpointAssistantInput): Promise<ChatRun>;
   createConversation(input: CreateConversationInput): Promise<Conversation>;
+  getConversation(
+    conversationId: string,
+    ownerId: string
+  ): Promise<Conversation>;
+  getMessage(messageId: string, ownerId: string): Promise<Message>;
+  getRun(runId: string, ownerId: string): Promise<ChatRun>;
   listBranchMessages(
     conversationId: string,
     leafMessageId: string,
@@ -105,6 +128,7 @@ export type ChatService = {
     afterSequence?: number
   ): Promise<RunEvent[]>;
   prepareRun(input: PrepareRunInput): Promise<PreparedRun>;
+  requestCancel(input: RequestCancelInput): Promise<ChatRun>;
   transitionRun(input: TransitionRunInput): Promise<ChatRun>;
 };
 
@@ -149,6 +173,44 @@ export function createChatService({
         runId,
         userMessageId,
       });
+    },
+
+    async getConversation(conversationId, ownerId) {
+      const parsed = ownerScopedConversationSchema.parse({
+        conversationId,
+        ownerId,
+      });
+      const conversation = await repository.findConversationForOwner(
+        parsed.conversationId,
+        parsed.ownerId
+      );
+      if (!conversation) {
+        throw new ChatDomainError(
+          "conversation_not_found",
+          "Conversation was not found."
+        );
+      }
+      return conversation;
+    },
+
+    async getMessage(messageId, ownerId) {
+      const parsed = ownerScopedMessageSchema.parse({ messageId, ownerId });
+      const message = await repository.findMessageForOwner(
+        parsed.messageId,
+        parsed.ownerId
+      );
+      if (!message) {
+        throw new ChatDomainError(
+          "message_not_found",
+          "Message was not found."
+        );
+      }
+      return message;
+    },
+
+    getRun(runId, ownerId) {
+      const parsed = ownerScopedRunSchema.parse({ ownerId, runId });
+      return requireRun(repository, parsed.runId, parsed.ownerId);
     },
 
     async checkpointAssistant(input) {
@@ -208,6 +270,19 @@ export function createChatService({
         ownerIdSchema.parse(ownerId),
         z.number().int().nonnegative().parse(afterSequence)
       );
+    },
+
+    requestCancel(input) {
+      const parsed = requestCancelInputSchema.parse(input);
+      return repository.requestRunCancellation({
+        at: clock.now(),
+        data: {
+          ...asJsonObject(parsed.data),
+          eventType: "run.cancel.requested",
+        },
+        ownerId: parsed.ownerId,
+        runId: parsed.runId,
+      });
     },
   };
 }

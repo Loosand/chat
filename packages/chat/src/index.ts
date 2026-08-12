@@ -25,6 +25,7 @@ export type {
   CreateConversationRecord,
   CreateRunTurnRecord,
   IdGenerator,
+  RequestRunCancellationRecord,
   TransitionRunRecord,
 } from "./ports";
 export {
@@ -40,6 +41,7 @@ export type {
   CreateChatServiceInput,
   CreateConversationInput,
   PrepareRunInput,
+  RequestCancelInput,
   TransitionRunInput,
 } from "./service";
 export { createChatService } from "./service";

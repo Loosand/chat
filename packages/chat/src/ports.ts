@@ -82,10 +82,25 @@ export type CheckpointAssistantRecord = {
   usage?: NormalizedUsage;
 };
 
+export type RequestRunCancellationRecord = {
+  at: Date;
+  data: JsonValue;
+  ownerId: OwnerId;
+  runId: RunId;
+};
+
 export type ChatRepository = {
   checkpointAssistant(input: CheckpointAssistantRecord): Promise<ChatRun>;
   createConversation(input: CreateConversationRecord): Promise<Conversation>;
   createRunTurn(input: CreateRunTurnRecord): Promise<PreparedRun>;
+  findConversationForOwner(
+    conversationId: ConversationId,
+    ownerId: OwnerId
+  ): Promise<Conversation | null>;
+  findMessageForOwner(
+    messageId: MessageId,
+    ownerId: OwnerId
+  ): Promise<Message | null>;
   findRunForOwner(runId: RunId, ownerId: OwnerId): Promise<ChatRun | null>;
   listBranchMessages(
     conversationId: ConversationId,
@@ -97,5 +112,6 @@ export type ChatRepository = {
     ownerId: OwnerId,
     afterSequence: number
   ): Promise<RunEvent[]>;
+  requestRunCancellation(input: RequestRunCancellationRecord): Promise<ChatRun>;
   transitionRun(input: TransitionRunRecord): Promise<ChatRun>;
 };

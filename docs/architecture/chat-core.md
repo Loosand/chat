@@ -62,6 +62,8 @@ stateDiagram-v2
 
 `cancel_requested -> completed` 是刻意允许的竞态：模型可能在取消请求被执行前已经完成。四个 terminal 状态不可退出；相同状态不是合法转换。assistant message 状态随 run 同步为 pending、streaming 或相应终态。
 
+用户取消不是调用方自行拼装的普通状态转换。`requestCancel()` 通过 repository 单事务把 pending/running run 改为 `cancel_requested`、递增 version/sequence 并写事件；重复请求、已经进入终态或与完成并发时返回当前 run，不重复写取消事件。进程内 AbortController 只能作为快速通知，跨实例的权威事实始终是 PostgreSQL 中的 run 状态。
+
 ## Checkpoint 与并发
 
 运行中的 assistant checkpoint 使用 run `version` 乐观并发。每次成功 checkpoint 原子更新消息内容、usage、version、`lastEventSequence` 并写 `message.checkpoint`；版本不一致返回 `concurrent_run_update`，调用者重新读取后决定重试。PostgreSQL 保存重要 checkpoint/event，不永久保存每个 token delta。adapter 将未知数据库/映射失败收敛为不包含 SQL 或约束详情的 `persistence_failure`。
@@ -81,16 +83,16 @@ stateDiagram-v2
 
 `createDrizzleChatRepository()` 面向通用 Drizzle PostgreSQL database，因此生产 `postgres-js` 与测试 PGlite 共享一套实现。turn 创建、checkpoint 和状态转换分别在单个事务中完成；所有 run 更新同时写 assistant 状态和递增 sequence 的重要事件。`(ownerId, clientRunId)` 的唯一冲突在事务回滚后读取既有事实，返回 `created=false`。
 
-所有读取把 owner 纳入查询。分支读取从 leaf 按 parent 逐级读取，成本与分支深度相关，不加载整段 conversation；缺失 leaf 和 conversation 使用稳定领域错误。持久化 JSON 在 adapter 出口重新通过 contracts schema 校验，未知 driver/constraint/映射错误对外统一为净化的 `persistence_failure`。
+所有 conversation、message、run、event 与 branch 读取都把 owner 纳入查询。service 对不存在或不属于 owner 的单项事实统一返回相应 not-found 语义，不泄漏其他用户是否拥有该 ID。分支读取从 leaf 按 parent 逐级读取，成本与分支深度相关，不加载整段 conversation；缺失 leaf 和 conversation 使用稳定领域错误。持久化 JSON 在 adapter 出口重新通过 contracts schema 校验，未知 driver/constraint/映射错误对外统一为净化的 `persistence_failure`。
 
 ## 可执行契约
 
-Goal 1 的测试分三层：纯领域测试验证状态机和 service 命令；migration 测试在 PGlite PostgreSQL 内核从零建库并验证约束；adapter/纵向测试把真实 ChatService、repository 和 migration 数据库组合起来，覆盖事务 rollback、重复请求、并发相同 `clientRunId`、checkpoint CAS、终态竞争、owner 隔离、分支读取、事件顺序与重新装配后的恢复。测试不使用 ORM mock，也不把内存 repository 当持久化验收。
+Goal 1 的测试分三层：纯领域测试验证状态机和 service 命令；migration 测试在 PGlite PostgreSQL 内核从零建库并验证约束；adapter/纵向测试把真实 ChatService、repository 和 migration 数据库组合起来，覆盖事务 rollback、重复请求、并发相同 `clientRunId`、checkpoint CAS、幂等取消、终态竞争、owner 隔离、分支读取、事件顺序与重新装配后的恢复。测试不使用 ORM mock，也不把内存 repository 当持久化验收。PGlite 首次并行初始化可能在受限 CI 超过 Vitest 默认 10 秒，因此 database package 对 hook/test 使用显式 30 秒预算；测试本身不访问网络。
 
 ## 当前未实现
 
-- AI SDK stream、模型路由、usage normalization 和 provider trace。
+- 已实现的模型 route resolver/AI SDK stream adapter 与聊天 run 的执行器装配，以及 provider trace。
 - Redis 完整短期 event replay、cancel flag 与跨实例 tail。
-- 身份/权限、计费、附件所有权、Route Handler 和聊天 UI。
+- 认证身份到聊天 owner 的 Route Handler 权限装配、计费、附件所有权和聊天 UI。
 
 这些能力属于后续原子功能/Goal，不能因为 contract 存在而标记为已实现。
