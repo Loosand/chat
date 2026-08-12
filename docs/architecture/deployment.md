@@ -24,7 +24,7 @@ VERCEL=1 bun run build
 
 ## Docker
 
-`Dockerfile` 有两个发布 target：
+`Dockerfile` 使用 Node 22 builder，并通过 Corepack 安装仓库锁定的 Bun 作为 package manager；Next.js build 脚本由 Node 执行，避免 Bun runtime 与 Next.js/Turbopack 的 Linux 构建兼容问题。它有两个发布 target：
 
 - `runner`：仅包含 Next.js standalone server 和静态产物，以非 root `node` 用户运行。
 - `migrate`：保留 Bun、Drizzle Kit、schema 和 migration，仅用于显式执行 `db:migrate`。

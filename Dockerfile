@@ -1,14 +1,15 @@
 # syntax=docker/dockerfile:1
 
-FROM oven/bun:1.3.13-alpine AS base
+FROM node:22-alpine AS base
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
 
+RUN corepack enable && corepack prepare bun@1.3.13 --activate
 COPY . .
 RUN bun install --frozen-lockfile
 
 FROM base AS builder
-RUN bunx turbo build --filter=web
+RUN bun run build
 
 FROM base AS migrate
 CMD ["bun", "run", "--cwd", "packages/database", "db:migrate"]
