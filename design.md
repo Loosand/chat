@@ -83,7 +83,7 @@ flowchart TB
 
 ## 数据与运行状态
 
-已实现：`@repo/contracts` 与 `@repo/chat` 已定义版本化消息内容、消息树、run/message 状态、重要事件、usage/failure 快照、repository ports 和显式 run 状态机；完整规则见 [`docs/architecture/chat-core.md`](./docs/architecture/chat-core.md)。数据库 adapter、事件存储和执行链路仍在 Goal 1 后续功能中。
+已实现：`@repo/contracts` 与 `@repo/chat` 已定义版本化消息内容、消息树、run/message 状态、重要事件、usage/failure 快照、repository ports 和显式 run 状态机；`@repo/database` 已提交四张 PostgreSQL 事实表、约束和初始 migration。完整规则见 [`docs/architecture/chat-core.md`](./docs/architecture/chat-core.md)。repository adapter、事件存储执行和模型链路仍在 Goal 1 后续功能中。
 
 规划：
 

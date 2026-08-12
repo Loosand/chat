@@ -1,7 +1,7 @@
 /**
  * [INPUT]: PostgreSQL 连接字符串
- * [OUTPUT]: Drizzle database、postgres client 与显式 close 方法
- * [POS]: @repo/database 的惰性连接工厂；当前没有全局单例和业务 schema
+ * [OUTPUT]: 带聊天 schema 的 Drizzle database、postgres client 与显式 close 方法
+ * [POS]: @repo/database 的惰性 PostgreSQL 连接工厂
  *
  * [PROTOCOL]:
  * 1. 连接生命周期或 driver 变化时更新此 Header。
@@ -10,10 +10,13 @@
 
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
+import { chatRunEvents, chatRuns, conversations, messages } from "./schema";
+
+const schema = { chatRunEvents, chatRuns, conversations, messages };
 
 export function createDatabase(connectionString: string) {
   const client = postgres(connectionString);
-  const database = drizzle(client);
+  const database = drizzle(client, { schema });
 
   return {
     client,

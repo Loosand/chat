@@ -1,6 +1,6 @@
 /**
- * [INPUT]: @repo/database 内部连接工厂
- * [OUTPUT]: 数据库 handle 类型与显式连接创建 API
+ * [INPUT]: @repo/database 内部连接工厂与 PostgreSQL schema
+ * [OUTPUT]: 数据库 handle、连接创建 API 与核心聊天表
  * [POS]: database package 唯一公共导出入口
  *
  * [PROTOCOL]:
@@ -10,3 +10,4 @@
 
 export type { DatabaseHandle } from "./client";
 export { createDatabase } from "./client";
+export { chatRunEvents, chatRuns, conversations, messages } from "./schema";

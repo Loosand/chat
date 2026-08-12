@@ -1,7 +1,7 @@
 # Chat Core
 
 > 代码源头：`packages/contracts/src/chat.ts`、`packages/chat/src/model.ts`、`packages/chat/src/ports.ts`、`packages/chat/src/run-state-machine.ts`、`packages/chat/src/service.ts`
-> 状态：领域契约、模型、ports、service 与 run 状态机已实现；PostgreSQL schema/repository 仍在 Goal 1 后续功能中实现。
+> 状态：领域契约、模型、ports、service、run 状态机、PostgreSQL schema 与初始 migration 已实现；repository adapter 仍在 Goal 1 后续功能中实现。
 
 ## 边界
 
@@ -66,9 +66,20 @@ stateDiagram-v2
 
 运行中的 assistant checkpoint 使用 run `version` 乐观并发。每次成功 checkpoint 原子更新消息内容、usage、version、`lastEventSequence` 并写 `message.checkpoint`；版本不一致返回 `concurrent_run_update`，调用者重新读取后决定重试。PostgreSQL 保存重要 checkpoint/event，不永久保存每个 token delta。
 
+## PostgreSQL schema
+
+已实现四张事实表：
+
+- `conversations`：owner、title、archive 和 active leaf。
+- `messages`：版本化 content、role/status、branch reason 与同会话 parent 树。
+- `chat_runs`：owner-scoped `clientRunId` 幂等、两条消息关联、状态、version、sequence、usage/failure/route snapshot。
+- `chat_run_events`：每个 run 内严格唯一的正整数 sequence 与重要事件 JSON。
+
+数据库用 check 约束稳定枚举和长度，用复合外键禁止跨 conversation 消息父子关系、跨 conversation run 消息和跨 owner run，用 `ON DELETE SET NULL` 处理 active leaf，用 `RESTRICT` 保留仍被 run 或子消息引用的事实。初始 migration 通过 PGlite 的 PostgreSQL 内核从零执行并验证约束；生产数据库只允许显式运行版本化 migration。
+
 ## 当前未实现
 
-- 真实 PostgreSQL repository 与 migration。
+- 真实 PostgreSQL repository adapter。
 - AI SDK stream、模型路由、usage normalization 和 provider trace。
 - Redis 完整短期 event replay、cancel flag 与跨实例 tail。
 - 身份/权限、计费、附件所有权、Route Handler 和聊天 UI。
