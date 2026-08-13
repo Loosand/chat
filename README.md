@@ -105,8 +105,11 @@ docs/
 ```bash
 cp .env.example .env
 bun install
+bun run db:migrate
 bun run dev
 ```
+
+根 `db:migrate` 与 `dev` 命令会显式读取根目录 `.env`；Web 进程仍不会隐式迁移数据库。
 
 ## 环境变量
 
@@ -128,7 +131,7 @@ bun run dev
 | `CHAT_MODEL_BASE_URL` | 自定义上游是 | 覆盖 preset；OpenAI-compatible 必填 |
 | 其他 `CHAT_MODEL_*` | 否 | protocol、平台 key/展示名/system prompt 和 Docker 私网开关，见模型 bootstrap 文档 |
 
-复制 `.env.example` 后填值。schema 不会在 Web 进程启动时自动迁移：本地/受控发布使用 `bun run --cwd packages/database db:migrate`，Compose 由独立 `migrate` service 执行。
+复制 `.env.example` 后填值。schema 不会在 Web 进程启动时自动迁移：本地使用会显式加载根 `.env` 的 `bun run db:migrate`，受控发布可直接运行 package migration，Compose 由独立 `migrate` service 执行。
 
 提交前运行：
 

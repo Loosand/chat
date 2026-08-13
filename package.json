@@ -17,7 +17,8 @@
   "scripts": {
     "build": "turbo build",
     "check": "biome check .",
-    "dev": "turbo dev --ui=stream",
+    "db:migrate": "bun run --cwd packages/database --env-file=../../.env db:migrate",
+    "dev": "bun --env-file=.env run turbo dev --ui=stream",
     "format": "biome check --write .",
     "test": "turbo test",
     "typecheck": "turbo typecheck"

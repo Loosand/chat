@@ -9,6 +9,7 @@
 - 根 package override 将所有传递依赖统一到已修复的 Undici 7.29.0 与 Lodash 4.18.1；依赖升级必须重跑 High 级审计。
 - Vercel 与 Docker 共享一份源码、PostgreSQL schema 和追加式 migration 历史。
 - Web 进程和 Function 启动时不自动迁移。migration 是部署阶段的显式、可观察步骤。
+- 本地根命令 `bun run dev` 与 `bun run db:migrate` 显式加载被 Git 忽略的根 `.env`；Turbo 只负责白名单传递，不承担 dotenv 发现。
 - 不把 `.env`、Vercel token、数据库凭证或 provider key 烘焙进镜像。
 - Core chat 不依赖 Redis、Trigger.dev 或 worker；这些基础设施按后续能力 profile 增加。
 
