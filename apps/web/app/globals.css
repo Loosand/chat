@@ -1,6 +1,6 @@
 /**
- * [INPUT]: Tailwind CSS v4、@repo/design-system 语义 token 与 Web 页面元素
- * [OUTPUT]: apps/web 的全局样式、首页入口、认证页面和持久聊天工作区布局
+ * [INPUT]: Tailwind CSS v4、Lerpwind、@repo/design-system 语义 token 与 Web 页面元素
+ * [OUTPUT]: apps/web 的全局样式，以及使用 viewport-fluid 尺度的首页、认证页和聊天工作区布局
  * [POS]: Web 样式入口，负责源码扫描并组合共享样式
  *
  * [PROTOCOL]:
@@ -11,11 +11,15 @@
 @import "tailwindcss";
 @import "@repo/design-system/styles/globals.css";
 @source "../../../packages/design-system/src";
+@plugin "lerpwind" {
+  min-viewport: 20rem;
+  max-viewport: 80rem;
+}
 
 .page-shell {
-  width: min(72rem, calc(100% - 2rem));
-  padding: 7rem 0 4rem;
+  width: min(72rem, 100%);
   margin: 0 auto;
+  @apply @px-4/8 @pt-16/28 @pb-10/16;
 }
 
 .hero {
@@ -24,10 +28,10 @@
 
 .hero h1 {
   margin: 0;
-  font-size: clamp(3rem, 9vw, 7rem);
   font-weight: 650;
   line-height: 0.9;
   letter-spacing: -0.07em;
+  @apply @text-5xl/8xl;
 }
 
 .eyebrow {
@@ -40,23 +44,21 @@
 }
 
 .lede {
-  margin: 2rem 0 0;
-  font-size: clamp(1rem, 2vw, 1.25rem);
+  margin-bottom: 0;
   line-height: 1.75;
   color: var(--muted-foreground);
+  @apply @mt-6/8 @text-base/xl;
 }
 
 .home-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 2rem;
+  @apply @mt-6/8 @gap-2/3;
 }
 
 .panel-grid {
   display: grid;
-  gap: 1rem;
-  margin-top: 4rem;
+  @apply @mt-10/16 @gap-4/6;
 }
 
 .panel-grid ul {
@@ -72,7 +74,7 @@
   display: grid;
   place-items: center;
   min-height: 100vh;
-  padding: 2rem 1rem;
+  @apply @p-4/8;
 }
 
 .auth-wordmark {
@@ -88,14 +90,14 @@
 
 .auth-title {
   margin: 0;
-  font-size: 1.5rem;
   font-weight: 650;
   letter-spacing: -0.025em;
+  @apply @text-xl/2xl;
 }
 
 .auth-form {
   display: grid;
-  gap: 1.25rem;
+  @apply @gap-4/6;
 }
 
 .auth-notice {
@@ -162,9 +164,9 @@
   align-items: center;
   justify-content: space-between;
   min-height: 4rem;
-  padding: 0.75rem clamp(1rem, 3vw, 2rem);
   background: var(--background);
   border-bottom: 1px solid var(--border);
+  @apply @px-4/8 @py-3/4;
 }
 
 .chat-brand,
@@ -197,9 +199,9 @@
 }
 
 .chat-message-content {
-  width: min(48rem, calc(100% - 2rem));
-  padding: 3rem 0 8rem;
+  width: min(48rem, 100%);
   margin: 0 auto;
+  @apply @px-4/8 @pt-8/12 @pb-20/32;
 }
 
 .chat-empty-state {
@@ -207,15 +209,15 @@
   place-content: center;
   max-width: 34rem;
   height: 100%;
-  padding: 2rem;
   margin: 0 auto;
   text-align: center;
+  @apply @p-4/8;
 }
 
 .chat-empty-state h2 {
   margin: 0;
-  font-size: clamp(2rem, 6vw, 3.5rem);
   letter-spacing: -0.055em;
+  @apply @text-3xl/5xl;
 }
 
 .chat-empty-state p:last-child {
@@ -231,10 +233,10 @@
 .chat-reasoning,
 .chat-sources {
   max-width: 42rem;
-  padding: 0.75rem 1rem;
   color: var(--muted-foreground);
   background: var(--muted);
   border-radius: var(--radius-xl);
+  @apply @px-3/4 @py-2/3;
 }
 
 .chat-reasoning summary {
@@ -259,9 +261,10 @@
 
 .chat-bottom {
   z-index: 3;
-  width: min(48rem, calc(100% - 2rem));
+  width: min(48rem, 100%);
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
   margin: 0 auto;
+  @apply @px-4/8;
 }
 
 .chat-error {
@@ -269,11 +272,11 @@
 }
 
 .chat-composer {
-  padding: 0.75rem;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-3xl);
   box-shadow: 0 1rem 3rem color-mix(in oklch, var(--foreground) 8%, transparent);
+  @apply @p-2/4;
 }
 
 .chat-composer-controls,
@@ -330,9 +333,9 @@
   place-content: center;
   max-width: 36rem;
   min-height: 100dvh;
-  padding: 2rem;
   margin: 0 auto;
   text-align: center;
+  @apply @p-4/8;
 }
 
 .chat-boundary h1,
@@ -341,8 +344,8 @@
 }
 
 .chat-boundary h1 {
-  font-size: clamp(2rem, 6vw, 3.5rem);
   letter-spacing: -0.055em;
+  @apply @text-3xl/5xl;
 }
 
 .chat-boundary > p:not(.eyebrow) {
@@ -371,9 +374,5 @@
 @media (max-width: 36rem) {
   .chat-composer-hint {
     display: none;
-  }
-
-  .chat-message-content {
-    padding-top: 2rem;
   }
 }

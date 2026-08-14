@@ -123,6 +123,7 @@ Goal 1 已实现构建 profile 分离：Vercel 检测到系统变量 `VERCEL=1` 
 
 - 中性、清楚、克制，优先信息层级和状态，不使用无语义渐变、发光或毛玻璃。
 - 默认使用 `@repo/design-system` 中仓库自有的 Base Rhea + Base UI primitive 和语义 token。
+- Web 页面关键字号、间距和边距使用 Lerpwind 在 20rem–80rem 间连续缩放；颜色与组件状态仍只来自语义 token。
 - Server Component 优先；交互、浏览器 API 或客户端状态才使用 Client Component。
 - 页面保持单一 `h1`，键盘、焦点、对比度和响应式属于完成标准。
 - 危险操作需要明确确认，错误不暴露凭证、上游原文或内部堆栈。

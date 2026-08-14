@@ -59,7 +59,7 @@ Chat 是一个从简开始、面向自托管与 Vercel 的多模型聊天平台�
 | AI | AI SDK 7；首批七种 family/protocol 文本 adapter、guarded provider transport、单 route chat run 执行器，以及 `useChat` 自定义 durable UI transport 已实现；多 route/failover 待实现 |
 | Data | Drizzle/PostgreSQL 聊天、认证与四层模型目录 schema/migration；PGlite 负责 PostgreSQL 语义集成测试 |
 | Jobs | 可插拔 JobDriver；Trigger.dev 可选，当前只有 contract |
-| UI | Tailwind CSS v4、shadcn/ui Base Rhea、Base UI、`@shadcn/react`、Streamdown |
+| UI | Tailwind CSS v4、Lerpwind 连续响应式尺度、shadcn/ui Base Rhea、Base UI、`@shadcn/react`、Streamdown |
 | Quality | TypeScript strict、Biome、Vitest |
 
 ## 项目地图
@@ -87,6 +87,7 @@ packages/
 
 docs/
 ├── architecture/          # 身份、聊天、部署、前端与文档架构规则
+├── guides/                # 面向初学者的概念解释与阅读指南
 ├── DEEIX_FEATURE_INVENTORY.zh-CN.md
 └── DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md
 
@@ -159,6 +160,7 @@ POSTGRES_PASSWORD='replace-with-a-url-safe-secret' docker compose up --build
 - [首模型部署 Bootstrap](./docs/architecture/model-bootstrap.md)
 - [Vercel 与 Docker 部署](./docs/architecture/deployment.md)
 - [前端技术基线](./docs/architecture/frontend-stack.md)
+- [DEEIX Chat 小白概念手册](./docs/guides/deeix-concepts-for-beginners.zh-CN.md)
 - [DEEIX 功能全量清单](./docs/DEEIX_FEATURE_INVENTORY.zh-CN.md)
 - [DEEIX 等价复刻与目标技术方案](./docs/DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md)
 - [分形文档结构指南](./docs/architecture/fractal-documentation-guide.md)

@@ -1,8 +1,8 @@
 # Frontend Stack Baseline
 
 > 代码源头：`packages/design-system/src/components/message-scroller.tsx`、`packages/design-system/src/components/streaming-markdown.tsx`
-> 状态：前端基础依赖、最薄聊天页面、AI SDK 状态接线、持久 checkpoint 传输与刷新恢复已实现；工具、文件和媒体 part 仍为规划。
-> 审计日期：2026-08-12。
+> 状态：前端基础依赖、最薄聊天页面、AI SDK 状态接线、持久 checkpoint 传输、刷新恢复与 viewport-fluid 页面尺度已实现；工具、文件和媒体 part 仍为规划。
+> 审计日期：2026-08-13。
 
 ## 1. 目标
 
@@ -19,7 +19,7 @@ Chat 的前端需要同时满足三类需求：
 | 层级 | 选择 | 当前状态 |
 | --- | --- | --- |
 | 框架 | Next.js 16 App Router、React 19、TypeScript 7 | 已实现 |
-| 样式 | Tailwind CSS v4、语义 token | 已实现 |
+| 样式 | Tailwind CSS v4、Lerpwind viewport-fluid 尺度、语义 token | 已实现 |
 | UI source | shadcn/ui Base Rhea + Base UI | 已实现 |
 | Chat primitive | shadcn Message、Bubble、Attachment、Marker | 已实现 |
 | 滚动行为 | `@shadcn/react/message-scroller` | 已实现 |
@@ -30,6 +30,8 @@ Chat 的前端需要同时满足三类需求：
 | 主题/通知/i18n | `next-themes`、Sonner、`next-intl` | 规划，按功能引入 |
 
 Rhea 用于紧凑、信息密度高的聊天工作区与管理后台。`components.json` 的 `style`、`baseColor`、`iconLibrary` 和 base 必须在 Web 与 design-system workspace 保持一致。
+
+Web 样式入口通过 Lerpwind 的 Tailwind v4 插件把首页、认证页和聊天工作区的关键 padding、gap 与字号写成 `@apply @…`。全局插值范围为 20rem–80rem；颜色、组件状态和语义圆角事实仍由 design-system token 管理，不让流式插件越过页面布局边界。
 
 ## 3. 消息渲染结构
 
