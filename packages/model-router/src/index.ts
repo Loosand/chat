@@ -52,6 +52,7 @@ export {
 } from "./provider-connection-errors";
 export type {
   ProviderConnection,
+  ProviderConnectionModel,
   ProviderConnectionRecord,
   ProviderPresetDefinition,
 } from "./provider-connection-model";
@@ -62,6 +63,8 @@ export {
 export type {
   ProviderConnectionClock,
   ProviderConnectionIdGenerator,
+  ProviderConnectionModelDiscoverer,
+  ProviderConnectionModelDiscoveryTarget,
   ProviderConnectionRepository,
   ProviderConnectionVerificationResult,
   ProviderConnectionVerificationTarget,

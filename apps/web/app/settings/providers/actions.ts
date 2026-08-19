@@ -1,6 +1,6 @@
 /**
- * [INPUT]: Provider 配置 FormData、权威 Better Auth session 与 ProviderConnectionService
- * [OUTPUT]: owner-scoped 保存、连通性检查、删除及固定 notice 重定向
+ * [INPUT]: Provider 配置 FormData、权威 Better Auth session 与自动模型发现 ProviderConnectionService
+ * [OUTPUT]: owner-scoped 模型刷新、保存、连通性检查、删除及固定 notice 重定向
  * [POS]: `/settings/providers` 写操作的 Server Action 边界
  * [DOC]: docs/architecture/model-catalog.md
  *
@@ -28,7 +28,7 @@ export async function saveProviderConnectionAction(
       apiKey: optionalString(formData, "apiKey"),
       baseUrl: requiredString(formData, "baseUrl"),
       enabled: formData.get("enabled") === "on",
-      modelId: requiredString(formData, "modelId"),
+      modelId: optionalString(formData, "modelId"),
       ownerId,
       preset,
     });
@@ -50,7 +50,7 @@ export async function checkProviderConnectionAction(
       apiKey: optionalString(formData, "apiKey"),
       baseUrl: requiredString(formData, "baseUrl"),
       enabled: formData.get("enabled") === "on",
-      modelId: requiredString(formData, "modelId"),
+      modelId: optionalString(formData, "modelId"),
       ownerId,
       preset,
     });
@@ -121,6 +121,10 @@ function toSafeNotice(error: unknown): string {
       return "not-found";
     case "provider_credential_unavailable":
       return "credential-unavailable";
+    case "provider_model_discovery_failed":
+      return "model-discovery-failed";
+    case "provider_model_list_empty":
+      return "model-list-empty";
     case "provider_connection_persistence_failure":
       return "persistence-failed";
     default:

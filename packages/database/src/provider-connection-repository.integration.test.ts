@@ -1,6 +1,6 @@
 /**
- * [INPUT]: ProviderConnectionService、Drizzle repository、全量 migration 与 PGlite PostgreSQL 内核
- * [OUTPUT]: 加密保存、更新/检查 revision、owner 隔离与删除的集成覆盖
+ * [INPUT]: ProviderConnectionService、模型 discoverer、Drizzle repository、全量 migration 与 PGlite PostgreSQL 内核
+ * [OUTPUT]: 模型快照、加密保存、更新/检查 revision、owner 隔离与删除的集成覆盖
  * [POS]: @repo/database ProviderConnectionRepository adapter 的可执行 contract
  * [DOC]: docs/architecture/model-catalog.md
  *
@@ -112,6 +112,12 @@ describe("Drizzle ProviderConnectionRepository", () => {
 function createService(database: PgliteDatabase<typeof schema>) {
   return createProviderConnectionService({
     clock: { now: () => now },
+    discoverer: {
+      discover: () =>
+        Promise.resolve([
+          { displayName: "Configured model", modelId: "configured-model" },
+        ]),
+    },
     ids: {
       providerConnectionId: () => "00000000-0000-4000-8000-000000000010",
     },

@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 文本草稿、模型列表、AI SDK status 与 submit/stop callbacks
- * [OUTPUT]: 可访问的模型选择、Enter 发送、Shift+Enter 换行和显式停止控件
+ * [OUTPUT]: 标准可搜索模型 Combobox、Enter 发送、Shift+Enter 换行和显式停止控件
  * [POS]: apps/web 首期聊天输入组合器
  * [DOC]: docs/architecture/frontend-stack.md
  *
@@ -15,6 +15,7 @@ import { Label } from "@repo/design-system/components/label";
 import { Textarea } from "@repo/design-system/components/textarea";
 import type { ChatStatus } from "ai";
 import { type FormEvent, type KeyboardEvent, useState } from "react";
+import { ModelCombobox } from "@/components/model-combobox";
 
 export function ChatComposer({
   models,
@@ -72,20 +73,17 @@ export function ChatComposer({
         <Label className="sr-only" htmlFor="chat-model">
           模型
         </Label>
-        <select
-          className="chat-model-select"
+        <ModelCombobox
           disabled={active || models.length === 0}
           id="chat-model"
-          onChange={(event) => setSelectedModelKey(event.target.value)}
+          onValueChange={setSelectedModelKey}
+          options={models.map((model) => ({
+            label: model.displayName,
+            value: model.key,
+          }))}
+          placeholder={models.length === 0 ? "暂无可用模型" : "搜索模型…"}
           value={selectedModelKey}
-        >
-          {models.length === 0 ? <option value="">暂无可用模型</option> : null}
-          {models.map((model) => (
-            <option key={model.key} value={model.key}>
-              {model.displayName}
-            </option>
-          ))}
-        </select>
+        />
         <span className="chat-composer-hint">
           Enter 发送 · Shift+Enter 换行
         </span>

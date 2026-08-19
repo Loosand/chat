@@ -13,6 +13,8 @@ export type ProviderConnectionErrorCode =
   | "provider_credential_required"
   | "provider_connection_not_found"
   | "provider_credential_unavailable"
+  | "provider_model_discovery_failed"
+  | "provider_model_list_empty"
   | "provider_connection_persistence_failure";
 
 export class ProviderConnectionError extends Error {

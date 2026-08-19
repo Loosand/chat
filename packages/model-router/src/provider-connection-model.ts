@@ -1,6 +1,6 @@
 /**
- * [INPUT]: 稳定 ProviderPreset、provider family/protocol 与用户连接事实
- * [OUTPUT]: 五个 preset 定义、公开 ProviderConnection 和密文持久化记录
+ * [INPUT]: 稳定 ProviderPreset、provider family/protocol、发现模型摘要与用户连接事实
+ * [OUTPUT]: 五个 preset 定义、公开 ProviderConnection、模型快照和密文持久化记录
  * [POS]: @repo/model-router 用户供应商连接领域模型
  * [DOC]: docs/architecture/model-catalog.md
  *
@@ -80,10 +80,16 @@ export type ProviderConnection = {
   id: string;
   lastCheckedAt: Date | null;
   modelId: string;
+  models: ProviderConnectionModel[];
   ownerId: OwnerId;
   preset: ProviderPreset;
   revision: number;
   updatedAt: Date;
+};
+
+export type ProviderConnectionModel = {
+  displayName: string;
+  modelId: string;
 };
 
 export type ProviderConnectionRecord = Omit<

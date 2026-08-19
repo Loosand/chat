@@ -1,6 +1,6 @@
 /**
- * [INPUT]: repository、credential vault、verifier、网络策略与不可信用户命令
- * [OUTPUT]: owner-scoped 保存、读取、删除和连通性检查的 ProviderConnectionService
+ * [INPUT]: repository、credential vault、model discoverer、verifier、网络策略与不可信用户命令
+ * [OUTPUT]: owner-scoped 自动模型发现、保存、读取、删除和连通性检查的 ProviderConnectionService
  * [POS]: @repo/model-router Learning Chatbot v1 供应商管理应用服务
  * [DOC]: docs/architecture/model-catalog.md
  *
@@ -19,12 +19,14 @@ import {
 } from "./provider-connection-errors";
 import {
   type ProviderConnection,
+  type ProviderConnectionModel,
   type ProviderConnectionRecord,
   toPublicProviderConnection,
 } from "./provider-connection-model";
 import type {
   ProviderConnectionClock,
   ProviderConnectionIdGenerator,
+  ProviderConnectionModelDiscoverer,
   ProviderConnectionRepository,
   ProviderConnectionVerificationResult,
   ProviderConnectionVerifier,
@@ -36,7 +38,7 @@ const saveProviderConnectionSchema = z.strictObject({
   apiKey: credentialSchema.optional(),
   baseUrl: z.string().trim().min(1).max(2048),
   enabled: z.boolean().default(false),
-  modelId: z.string().trim().min(1).max(300),
+  modelId: z.string().trim().min(1).max(300).optional(),
   ownerId: ownerIdSchema,
   preset: providerPresetSchema,
 });
@@ -67,6 +69,7 @@ export type ProviderConnectionService = {
 
 export type CreateProviderConnectionServiceInput = {
   clock: ProviderConnectionClock;
+  discoverer: ProviderConnectionModelDiscoverer;
   ids: ProviderConnectionIdGenerator;
   networkPolicy: NetworkTargetPolicy;
   repository: ProviderConnectionRepository;
@@ -76,6 +79,7 @@ export type CreateProviderConnectionServiceInput = {
 
 export function createProviderConnectionService({
   clock,
+  discoverer,
   ids,
   networkPolicy,
   repository,
@@ -158,18 +162,26 @@ export function createProviderConnectionService({
         repository.find(input.ownerId, input.preset)
       );
       const baseUrl = await validateBaseUrl(networkPolicy, input.baseUrl);
-      const encryptedCredential = await resolveEncryptedCredential(
+      const credential = await resolveCredential(
         vault,
         current,
         input.apiKey
       );
+      const models = await discoverModels(discoverer, {
+        baseUrl,
+        credential: credential.plaintext,
+        preset: input.preset,
+      });
+      const modelId = selectDefaultModelId(models, input.modelId, current);
       const now = clock.now();
       const record = createProviderConnectionRecord({
         baseUrl,
         current,
-        encryptedCredential,
+        encryptedCredential: credential.encrypted,
         ids,
         input,
+        modelId,
+        models,
         now,
       });
       const saved = await withPersistenceBoundary(() =>
@@ -200,14 +212,14 @@ async function validateBaseUrl(
   }
 }
 
-async function resolveEncryptedCredential(
+async function resolveCredential(
   vault: ProviderCredentialVault,
   current: ProviderConnectionRecord | null,
   apiKey: string | undefined
-): Promise<string> {
+): Promise<{ encrypted: string; plaintext: string }> {
   if (apiKey) {
     try {
-      return await vault.seal(apiKey);
+      return { encrypted: await vault.seal(apiKey), plaintext: apiKey };
     } catch {
       throw new ProviderConnectionError(
         "provider_credential_unavailable",
@@ -216,9 +228,63 @@ async function resolveEncryptedCredential(
     }
   }
   if (current) {
-    return current.encryptedCredential;
+    try {
+      return {
+        encrypted: current.encryptedCredential,
+        plaintext: await vault.open(current.encryptedCredential),
+      };
+    } catch {
+      throw new ProviderConnectionError(
+        "provider_credential_unavailable",
+        "The provider credential could not be opened."
+      );
+    }
   }
   throw credentialRequired();
+}
+
+async function discoverModels(
+  discoverer: ProviderConnectionModelDiscoverer,
+  target: Parameters<ProviderConnectionModelDiscoverer["discover"]>[0]
+): Promise<ProviderConnectionModel[]> {
+  let models: ProviderConnectionModel[];
+  try {
+    models = await discoverer.discover(target);
+  } catch {
+    throw new ProviderConnectionError(
+      "provider_model_discovery_failed",
+      "The provider model catalog could not be fetched."
+    );
+  }
+  if (models.length === 0) {
+    throw new ProviderConnectionError(
+      "provider_model_list_empty",
+      "The provider returned no compatible generation models."
+    );
+  }
+  return models;
+}
+
+function selectDefaultModelId(
+  models: ProviderConnectionModel[],
+  requestedModelId: string | undefined,
+  current: ProviderConnectionRecord | null
+): string {
+  const available = new Set(models.map((model) => model.modelId));
+  if (requestedModelId && available.has(requestedModelId)) {
+    return requestedModelId;
+  }
+  if (current && available.has(current.modelId)) {
+    return current.modelId;
+  }
+  const firstModel = models.at(0);
+  if (!firstModel) {
+    throw new ProviderConnectionError(
+      "provider_model_list_empty",
+      "The provider returned no compatible generation models."
+    );
+  }
+  return firstModel.modelId;
 }
 
 function createProviderConnectionRecord({
@@ -227,6 +293,8 @@ function createProviderConnectionRecord({
   encryptedCredential,
   ids,
   input,
+  modelId,
+  models,
   now,
 }: {
   baseUrl: string;
@@ -234,13 +302,16 @@ function createProviderConnectionRecord({
   encryptedCredential: string;
   ids: ProviderConnectionIdGenerator;
   input: ParsedSaveProviderConnectionInput;
+  modelId: string;
+  models: ProviderConnectionModel[];
   now: Date;
 }): ProviderConnectionRecord {
   const connectionChanged =
     !current ||
     Boolean(input.apiKey) ||
     current.baseUrl !== baseUrl ||
-    current.modelId !== input.modelId;
+    current.modelId !== modelId ||
+    JSON.stringify(current.models) !== JSON.stringify(models);
   return {
     baseUrl,
     checkStatus: connectionChanged ? "unchecked" : current.checkStatus,
@@ -250,7 +321,8 @@ function createProviderConnectionRecord({
     failureCode: connectionChanged ? null : current.failureCode,
     id: current?.id ?? ids.providerConnectionId(),
     lastCheckedAt: connectionChanged ? null : current.lastCheckedAt,
-    modelId: input.modelId,
+    modelId,
+    models,
     ownerId: input.ownerId,
     preset: input.preset,
     revision: current?.revision ?? 0,

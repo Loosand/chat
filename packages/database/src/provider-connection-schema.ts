@@ -1,6 +1,6 @@
 /**
- * [INPUT]: 稳定供应商 preset/check contract、Better Auth user 与 Drizzle PostgreSQL builders
- * [OUTPUT]: owner-scoped provider_connections 加密凭证表及约束
+ * [INPUT]: 稳定供应商 preset/check contract、发现模型摘要、Better Auth user 与 Drizzle PostgreSQL builders
+ * [OUTPUT]: owner-scoped provider_connections 加密凭证、模型目录快照表及约束
  * [POS]: @repo/database 用户供应商连接的 PostgreSQL schema 事实源
  * [DOC]: docs/architecture/model-catalog.md
  *
@@ -15,12 +15,14 @@ import type {
   ProviderConnectionFailureCode,
   ProviderPreset,
 } from "@repo/contracts";
+import type { ProviderConnectionModel } from "@repo/model-router";
 import { sql } from "drizzle-orm";
 import {
   boolean,
   check,
   index,
   integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
@@ -49,6 +51,10 @@ export const providerConnections = pgTable(
       withTimezone: true,
     }),
     modelId: text("model_id").notNull(),
+    models: jsonb("models")
+      .$type<ProviderConnectionModel[]>()
+      .default(sql`'[]'::jsonb`)
+      .notNull(),
     ownerId: uuid("owner_id")
       .$type<OwnerId>()
       .notNull()
@@ -101,6 +107,11 @@ export const providerConnections = pgTable(
       sql`char_length(${table.baseUrl}) between 1 and 2048
         and char_length(${table.modelId}) between 1 and 300
         and char_length(${table.encryptedCredential}) between 16 and 32768`
+    ),
+    check(
+      "provider_connections_models_check",
+      sql`jsonb_typeof(${table.models}) = 'array'
+        and jsonb_array_length(${table.models}) between 1 and 1000`
     ),
     check("provider_connections_revision_check", sql`${table.revision} >= 0`),
   ]

@@ -17,7 +17,8 @@
     "@ai-sdk/xai": "4.0.37",
     "@repo/contracts": "workspace:*",
     "@repo/network-security": "workspace:*",
-    "ai": "^7.0.59"
+    "ai": "^7.0.59",
+    "zod": "^4.1.13"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*"

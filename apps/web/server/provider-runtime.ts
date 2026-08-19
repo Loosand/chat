@@ -1,6 +1,6 @@
 /**
- * [INPUT]: 惰性 auth/database runtime、DNS、供应商 repository、vault 与 AI verifier
- * [OUTPUT]: Web 进程共享的 ProviderConnectionService 与加密主密钥 readiness
+ * [INPUT]: 惰性 auth/database runtime、DNS、供应商 repository、vault、AI 模型发现与 verifier
+ * [OUTPUT]: Web 进程共享的自动模型发现 ProviderConnectionService 与加密主密钥 readiness
  * [POS]: apps/web 用户供应商管理的 server composition root
  * [DOC]: docs/architecture/model-catalog.md
  *
@@ -16,6 +16,7 @@ import {
 import { createNetworkTargetPolicy } from "@repo/network-security";
 import { getAuthRuntime } from "./auth";
 import { createAiProviderConnectionVerifier } from "./provider-connection-verifier";
+import { createAiProviderModelDiscoverer } from "./provider-model-discoverer";
 import {
   createProviderCredentialVault,
   isProviderCredentialVaultConfigured,
@@ -42,20 +43,20 @@ export function getProviderRuntime(): ProviderRuntime {
     },
   };
   const encryptionKey = process.env.PROVIDER_CREDENTIAL_ENCRYPTION_KEY;
+  const requestTargetPolicy = createNetworkTargetPolicy(resolver);
   runtime = {
     credentialVaultConfigured:
       isProviderCredentialVaultConfigured(encryptionKey),
     providers: createProviderConnectionService({
       clock: { now: () => new Date() },
+      discoverer: createAiProviderModelDiscoverer(requestTargetPolicy),
       ids: { providerConnectionId: () => crypto.randomUUID() },
       networkPolicy: createCatalogNetworkTargetPolicy(resolver),
       repository: createDrizzleProviderConnectionRepository(
         authRuntime.database.database
       ),
       vault: createProviderCredentialVault(encryptionKey),
-      verifier: createAiProviderConnectionVerifier(
-        createNetworkTargetPolicy(resolver)
-      ),
+      verifier: createAiProviderConnectionVerifier(requestTargetPolicy),
     }),
   };
   return runtime;

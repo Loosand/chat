@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 通用 Drizzle PostgreSQL database 与 ProviderConnectionRepository port
- * [OUTPUT]: owner/preset-scoped provider_connections 加密记录 repository adapter
+ * [OUTPUT]: owner/preset-scoped provider_connections 加密记录和模型快照 repository adapter
  * [POS]: @repo/database 对用户供应商连接 port 的 PostgreSQL 实现
  * [DOC]: docs/architecture/model-catalog.md
  *
@@ -93,6 +93,7 @@ export function createDrizzleProviderConnectionRepository<
               failureCode: record.failureCode,
               lastCheckedAt: record.lastCheckedAt,
               modelId: record.modelId,
+              models: record.models,
               revision: sql`${providerConnections.revision} + 1`,
               updatedAt: record.updatedAt,
             },
@@ -123,11 +124,32 @@ function mapProviderConnection(
     id: row.id,
     lastCheckedAt: row.lastCheckedAt,
     modelId: row.modelId,
+    models: parseModels(row.models),
     ownerId: ownerIdSchema.parse(row.ownerId),
     preset: providerPresetSchema.parse(row.preset),
     revision: row.revision,
     updatedAt: row.updatedAt,
   };
+}
+
+function parseModels(models: unknown): ProviderConnectionRecord["models"] {
+  if (!Array.isArray(models) || models.length === 0 || models.length > 1000) {
+    throw persistenceFailure();
+  }
+  return models.map((model) => {
+    if (
+      typeof model !== "object" ||
+      model === null ||
+      typeof Reflect.get(model, "modelId") !== "string" ||
+      typeof Reflect.get(model, "displayName") !== "string"
+    ) {
+      throw persistenceFailure();
+    }
+    return {
+      displayName: Reflect.get(model, "displayName") as string,
+      modelId: Reflect.get(model, "modelId") as string,
+    };
+  });
 }
 
 async function withPersistenceBoundary<Value>(

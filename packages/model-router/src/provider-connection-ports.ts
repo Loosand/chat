@@ -1,6 +1,6 @@
 /**
- * [INPUT]: 用户供应商连接记录、短生命周期 credential 与安全检查目标
- * [OUTPUT]: repository、credential vault、verifier、clock 与 ID ports
+ * [INPUT]: 用户供应商连接记录、短生命周期 credential、模型发现与安全检查目标
+ * [OUTPUT]: repository、credential vault、model discoverer、verifier、clock 与 ID ports
  * [POS]: @repo/model-router 用户供应商管理的依赖倒置边界
  * [DOC]: docs/architecture/model-catalog.md
  *
@@ -14,7 +14,10 @@ import type {
   ProviderConnectionFailureCode,
   ProviderPreset,
 } from "@repo/contracts";
-import type { ProviderConnectionRecord } from "./provider-connection-model";
+import type {
+  ProviderConnectionModel,
+  ProviderConnectionRecord,
+} from "./provider-connection-model";
 
 export type ProviderConnectionClock = { now(): Date };
 export type ProviderConnectionIdGenerator = { providerConnectionId(): string };
@@ -29,6 +32,18 @@ export type ProviderConnectionVerificationTarget = {
   credential: string;
   modelId: string;
   preset: ProviderPreset;
+};
+
+export type ProviderConnectionModelDiscoveryTarget = {
+  baseUrl: string;
+  credential: string;
+  preset: ProviderPreset;
+};
+
+export type ProviderConnectionModelDiscoverer = {
+  discover(
+    target: ProviderConnectionModelDiscoveryTarget
+  ): Promise<ProviderConnectionModel[]>;
 };
 
 export type ProviderConnectionVerificationResult =

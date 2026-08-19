@@ -1,6 +1,6 @@
 /**
- * [INPUT]: ProviderConnectionService、内存 repository/vault/verifier 与确定性 clock/ID
- * [OUTPUT]: owner 隔离、密钥遮蔽、URL 校验、保存/检查/删除的无基础设施回归覆盖
+ * [INPUT]: ProviderConnectionService、内存 repository/vault/discoverer/verifier 与确定性 clock/ID
+ * [OUTPUT]: 自动模型发现、默认模型、owner 隔离、密钥遮蔽、URL 校验、保存/检查/删除的回归覆盖
  * [POS]: @repo/model-router 用户供应商连接应用服务的可执行规范
  * [DOC]: docs/architecture/model-catalog.md
  *
@@ -12,6 +12,7 @@ import { describe, expect, it } from "vitest";
 import { ModelCatalogError } from "./errors";
 import type {
   ProviderConnectionRecord,
+  ProviderConnectionModelDiscoverer,
   ProviderConnectionRepository,
   ProviderConnectionVerificationTarget,
   ProviderConnectionVerifier,
@@ -43,6 +44,9 @@ describe("ProviderConnectionService", () => {
       enabled: true,
       hasCredential: true,
       modelId: "configured-model",
+      models: expect.arrayContaining([
+        { displayName: "Configured model", modelId: "configured-model" },
+      ]),
       ownerId: ownerA,
     });
     expect(JSON.stringify(connection)).not.toContain("top-secret-key");
@@ -52,6 +56,30 @@ describe("ProviderConnectionService", () => {
     ).resolves.toMatchObject({
       encryptedCredential: "sealed:top-secret-key",
     });
+  });
+
+  it("discovers models and selects the first model without manual input", async () => {
+    const repository = createRepository();
+    const service = createService(repository, undefined, undefined, {
+      discover: () =>
+        Promise.resolve([
+          { displayName: "Alpha", modelId: "alpha" },
+          { displayName: "Beta", modelId: "beta" },
+        ]),
+    });
+
+    const saved = await service.save({
+      apiKey: "catalog-key",
+      baseUrl: "https://api.example.com/v1",
+      ownerId: ownerA,
+      preset: "openai-compatible",
+    });
+
+    expect(saved).toMatchObject({ modelId: "alpha" });
+    expect(saved.models).toEqual([
+      { displayName: "Alpha", modelId: "alpha" },
+      { displayName: "Beta", modelId: "beta" },
+    ]);
   });
 
   it("preserves an existing credential when an update omits apiKey", async () => {
@@ -174,10 +202,21 @@ function createService(
   networkPolicy = {
     validateBaseUrl: (url: string) =>
       Promise.resolve(url.replace(trailingSlashPattern, "")),
+  },
+  discoverer: ProviderConnectionModelDiscoverer = {
+    discover: () =>
+      Promise.resolve([
+        { displayName: "Configured model", modelId: "configured-model" },
+        { displayName: "First model", modelId: "first-model" },
+        { displayName: "Model", modelId: "model" },
+        { displayName: "Model A", modelId: "model-a" },
+        { displayName: "Second model", modelId: "second-model" },
+      ]),
   }
 ) {
   return createProviderConnectionService({
     clock: { now: () => now },
+    discoverer,
     ids: {
       providerConnectionId: () => "00000000-0000-4000-8000-000000000010",
     },

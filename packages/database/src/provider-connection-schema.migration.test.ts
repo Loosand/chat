@@ -1,6 +1,6 @@
 /**
  * [INPUT]: 版本化 migration、PGlite PostgreSQL 内核与 provider_connections schema
- * [OUTPUT]: 表、owner/preset 唯一性、状态一致性与用户级联删除的真实数据库覆盖
+ * [OUTPUT]: 表、模型快照、owner/preset 唯一性、状态一致性与用户级联删除的真实数据库覆盖
  * [POS]: @repo/database 用户供应商连接 schema/migration 的可执行规范
  * [DOC]: docs/architecture/model-catalog.md
  *
@@ -46,6 +46,7 @@ describe("provider connection migration", () => {
         "check_status",
         "encrypted_credential",
         "model_id",
+        "models",
         "owner_id",
         "preset",
         "revision",
@@ -66,13 +67,14 @@ describe("provider connection migration", () => {
     await expect(
       client.exec(`
         insert into provider_connections (
-          id, owner_id, preset, encrypted_credential, base_url, model_id,
-          check_status, failure_code
+      id, owner_id, preset, encrypted_credential, base_url, model_id,
+          models, check_status, failure_code
         ) values (
           '00000000-0000-4000-8000-000000000003',
           '${ownerId}', 'deepseek-compatible',
           'v1.nonce.tag.ciphertext', 'https://api.deepseek.com/v1',
-          'configured-model', 'failed', 'authentication_failed'
+          'configured-model', '[{"modelId":"configured-model","displayName":"Configured model"}]',
+          'failed', 'authentication_failed'
         )
       `)
     ).rejects.toThrow(resultConstraintPattern);
@@ -107,10 +109,11 @@ async function insertConnection(
   await client.exec(`
     insert into provider_connections (
       id, owner_id, preset, encrypted_credential, base_url, model_id
+      , models
     ) values (
       '${id}', '${ownerId}', 'openai-compatible',
       'v1.nonce.tag.ciphertext', 'https://api.openai.com/v1',
-      'configured-model'
+      'configured-model', '[{"modelId":"configured-model","displayName":"Configured model"}]'
     )
   `);
 }

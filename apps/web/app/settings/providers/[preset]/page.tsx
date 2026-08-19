@@ -1,10 +1,10 @@
 /**
- * [INPUT]: preset params、权威 session、公开 ProviderConnection 与 Server Actions
- * [OUTPUT]: 单供应商配置、脱敏凭证状态、连通性结果和删除入口
+ * [INPUT]: preset params、权威 session、公开 ProviderConnection 模型快照与 Server Actions
+ * [OUTPUT]: 紧凑单供应商配置、自动模型目录、标准 Combobox、连通性结果和删除入口
  * [POS]: Learning Chatbot v1 用户供应商详情页
  * [DOC]: docs/architecture/model-catalog.md
  *
- * [PROTOCOL]: API Key 永不回填；空值更新保留旧密钥，所有兼容 Base URL 由服务端校验。
+ * [PROTOCOL]: API Key 永不回填；空值更新保留旧密钥，模型目录只能由服务端安全获取。
  */
 
 import {
@@ -16,18 +16,24 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@repo/design-system/components/alert";
-import { Button, buttonVariants } from "@repo/design-system/components/button";
-import { Card, CardContent } from "@repo/design-system/components/card";
+import { Badge } from "@repo/design-system/components/badge";
+import { Button } from "@repo/design-system/components/button";
 import { Input } from "@repo/design-system/components/input";
 import { Label } from "@repo/design-system/components/label";
+import { Separator } from "@repo/design-system/components/separator";
+import { Switch } from "@repo/design-system/components/switch";
 import {
   getProviderPresetDefinition,
   type ProviderConnection,
 } from "@repo/model-router";
 import { headers } from "next/headers";
-import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { DeleteProviderConnectionForm } from "@/components/providers/delete-provider-connection-form";
+import { ProviderModelField } from "@/components/providers/provider-model-field";
+import {
+  getConnectionStatusLabel,
+  ProviderSettingsLayout,
+} from "@/components/providers/provider-settings-layout";
 import { getAuthenticatedOwnerId } from "@/server/auth";
 import { requireChatPageOwner } from "@/server/chat-page-auth";
 import { getProviderRuntime } from "@/server/provider-runtime";
@@ -58,33 +64,34 @@ export default async function ProviderSettingsDetailPage({
     redirect,
   });
   const runtime = getProviderRuntime();
-  const connection = await runtime.providers.find({ ownerId, preset });
+  const connections = await runtime.providers.list(ownerId);
+  const connection =
+    connections.find((candidate) => candidate.preset === preset) ?? null;
   const definition = getProviderPresetDefinition(preset);
   const notice = getNotice(query.notice);
+  const controlsDisabled = !runtime.credentialVaultConfigured;
 
   return (
-    <main className="settings-shell settings-detail-shell">
-      <header className="settings-header">
-        <div>
-          <Link
-            className={buttonVariants({
-              className: "settings-back-link",
-              variant: "ghost",
-            })}
-            href="/settings/providers"
-          >
-            ← 所有供应商
-          </Link>
-          <h1>{definition.displayName}</h1>
-          <p className="settings-lede">{definition.description}</p>
-        </div>
-        <span
-          className="provider-status provider-status-large"
-          data-status={connection?.checkStatus ?? "unconfigured"}
-        >
-          {getStatusLabel(connection)}
+    <ProviderSettingsLayout
+      activePreset={preset}
+      connections={connections}
+    >
+      <div className="provider-detail-header">
+        <span className="provider-mark provider-mark-large">
+          {definition.displayName.slice(0, 1)}
         </span>
-      </header>
+        <div>
+          <h2>{definition.displayName}</h2>
+          <p>{definition.description}</p>
+        </div>
+        <Badge
+          variant={
+            connection?.checkStatus === "connected" ? "default" : "secondary"
+          }
+        >
+          {getConnectionStatusLabel(connection?.checkStatus)}
+        </Badge>
+      </div>
 
       {notice ? (
         <Alert
@@ -100,132 +107,131 @@ export default async function ProviderSettingsDetailPage({
         <Alert className="settings-notice" variant="destructive">
           <AlertTitle>服务端加密未就绪</AlertTitle>
           <AlertDescription>
-            设置 PROVIDER_CREDENTIAL_ENCRYPTION_KEY 并重启 Web
-            服务后，才能保存或检查凭证。
+            设置 PROVIDER_CREDENTIAL_ENCRYPTION_KEY 并重启 Web 服务后再保存。
           </AlertDescription>
         </Alert>
       )}
 
-      <Card>
-        <CardContent>
-          <form className="provider-form">
-            <input name="preset" type="hidden" value={preset} />
-            <div className="provider-field">
-              <Label htmlFor="apiKey">API Key</Label>
-              <Input
-                autoComplete="off"
-                disabled={!runtime.credentialVaultConfigured}
-                id="apiKey"
-                name="apiKey"
-                placeholder={
-                  connection?.hasCredential
-                    ? "已安全保存；留空表示不更换"
-                    : "粘贴供应商 API Key"
-                }
-                type="password"
-              />
-              <p>
-                {connection?.hasCredential
-                  ? "现有密钥不会回显；只有填写新值才会替换。"
-                  : "密钥提交后使用 AES-256-GCM 加密保存。"}
-              </p>
-            </div>
+      <form className="provider-detail-form">
+        <input name="preset" type="hidden" value={preset} />
 
-            <div className="provider-field">
-              <Label htmlFor="baseUrl">兼容 Base URL</Label>
-              <Input
-                defaultValue={connection?.baseUrl ?? definition.defaultBaseUrl}
-                disabled={!runtime.credentialVaultConfigured}
-                id="baseUrl"
-                inputMode="url"
-                name="baseUrl"
-                required
-                type="url"
-              />
-              <p>
-                仅允许公开 HTTP(S) 目标；保存和请求时都会进行服务端网络校验。
-              </p>
-            </div>
+        <div className="provider-detail-field">
+          <div>
+            <Label htmlFor="apiKey">API Key</Label>
+            <p>仅在服务端使用 AES-256-GCM 加密保存，不会再次回显。</p>
+          </div>
+          <Input
+            autoComplete="off"
+            disabled={controlsDisabled}
+            id="apiKey"
+            name="apiKey"
+            placeholder={
+              connection?.hasCredential
+                ? "已安全保存；留空表示不更换"
+                : "粘贴供应商 API Key"
+            }
+            type="password"
+          />
+        </div>
+        <Separator />
 
-            <div className="provider-field">
-              <Label htmlFor="modelId">默认模型 ID</Label>
-              <Input
-                defaultValue={connection?.modelId ?? ""}
-                disabled={!runtime.credentialVaultConfigured}
-                id="modelId"
-                name="modelId"
-                placeholder="例如供应商文档中的模型标识"
-                required
-              />
-              <p>
-                第一阶段不自动拉取模型列表，请填写供应商实际支持的模型标识。
-              </p>
-            </div>
+        <div className="provider-detail-field">
+          <div>
+            <Label htmlFor="baseUrl">API Base URL</Label>
+            <p>默认使用官方地址，也支持通过安全校验的公开兼容端点。</p>
+          </div>
+          <Input
+            defaultValue={connection?.baseUrl ?? definition.defaultBaseUrl}
+            disabled={controlsDisabled}
+            id="baseUrl"
+            inputMode="url"
+            name="baseUrl"
+            required
+            type="url"
+          />
+        </div>
+        <Separator />
 
-            <label className="provider-toggle" htmlFor="enabled">
-              <input
-                defaultChecked={connection?.enabled ?? true}
-                disabled={!runtime.credentialVaultConfigured}
-                id="enabled"
-                name="enabled"
-                type="checkbox"
-              />
-              <span>
-                <strong>启用此供应商</strong>
-                <small>保存启用状态；接入聊天模型选择将在下一阶段完成。</small>
-              </span>
-            </label>
-
-            <div className="provider-form-actions">
-              <Button
-                disabled={!runtime.credentialVaultConfigured}
-                formAction={saveProviderConnectionAction}
-                type="submit"
-                variant="outline"
-              >
-                保存配置
-              </Button>
-              <Button
-                disabled={!runtime.credentialVaultConfigured}
-                formAction={checkProviderConnectionAction}
-                type="submit"
-              >
-                保存并检查连接
-              </Button>
+        <div className="provider-detail-field">
+          <div>
+            <Label htmlFor="modelId">默认模型</Label>
+            <p>
+              {connection
+                ? `已从供应商读取 ${connection.models.length} 个模型，可搜索选择。`
+                : "首次保存时自动读取模型目录并选择第一个可用模型。"}
+            </p>
+          </div>
+          {connection ? (
+            <ProviderModelField
+              disabled={controlsDisabled}
+              initialValue={connection.modelId}
+              models={connection.models}
+            />
+          ) : (
+            <div className="provider-model-empty">
+              保存凭证后自动获取，无需手填
             </div>
-          </form>
-        </CardContent>
-      </Card>
+          )}
+        </div>
+        <Separator />
+
+        <div className="provider-detail-field provider-detail-toggle-row">
+          <div>
+            <Label htmlFor="enabled">启用供应商</Label>
+            <p>保存启用状态；接入聊天路由仍属于下一阶段。</p>
+          </div>
+          <Switch
+            defaultChecked={connection?.enabled ?? true}
+            disabled={controlsDisabled}
+            id="enabled"
+            name="enabled"
+          />
+        </div>
+
+        <div className="provider-form-actions">
+          <Button
+            disabled={controlsDisabled}
+            formAction={saveProviderConnectionAction}
+            type="submit"
+            variant="outline"
+          >
+            {connection ? "刷新模型并保存" : "保存并获取模型"}
+          </Button>
+          <Button
+            disabled={controlsDisabled}
+            formAction={checkProviderConnectionAction}
+            type="submit"
+          >
+            保存并检查连接
+          </Button>
+        </div>
+      </form>
 
       {connection ? (
-        <Card className="provider-check-card">
-          <CardContent>
-            <div className="provider-check-summary">
-              <div>
-                <h2>最近一次检查</h2>
-                <p>{getCheckSummary(connection)}</p>
-              </div>
-              <time dateTime={connection.lastCheckedAt?.toISOString()}>
-                {connection.lastCheckedAt
-                  ? new Intl.DateTimeFormat("zh-CN", {
-                      dateStyle: "medium",
-                      timeStyle: "short",
-                    }).format(connection.lastCheckedAt)
-                  : "尚未检查"}
-              </time>
-            </div>
-          </CardContent>
-        </Card>
+        <section className="provider-compact-section">
+          <div>
+            <h3>最近一次检查</h3>
+            <p>{getCheckSummary(connection)}</p>
+          </div>
+          <time dateTime={connection.lastCheckedAt?.toISOString()}>
+            {connection.lastCheckedAt
+              ? new Intl.DateTimeFormat("zh-CN", {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                }).format(connection.lastCheckedAt)
+              : "尚未检查"}
+          </time>
+        </section>
       ) : null}
 
       {connection ? (
         <section
           aria-labelledby="danger-title"
-          className="provider-danger-zone"
+          className="provider-compact-section provider-danger-zone"
         >
           <div>
-            <h2 id="danger-title">删除配置</h2>
-            <p>删除会移除当前账号保存的地址、模型和加密凭证。</p>
+            <h3 id="danger-title">删除配置</h3>
+            <p>移除地址、模型目录和加密凭证，此操作不可撤销。</p>
           </div>
           <DeleteProviderConnectionForm
             displayName={definition.displayName}
@@ -233,29 +239,13 @@ export default async function ProviderSettingsDetailPage({
           />
         </section>
       ) : null}
-    </main>
+    </ProviderSettingsLayout>
   );
-}
-
-function getStatusLabel(connection: ProviderConnection | null): string {
-  if (!connection) {
-    return "未配置";
-  }
-  switch (connection.checkStatus) {
-    case "connected":
-      return "连接正常";
-    case "failed":
-      return "检查失败";
-    case "unchecked":
-      return "等待检查";
-    default:
-      return "状态未知";
-  }
 }
 
 function getCheckSummary(connection: ProviderConnection): string {
   if (connection.checkStatus === "connected") {
-    return "服务端已使用当前地址、模型和凭证完成最小生成请求。";
+    return "服务端已使用当前地址、默认模型和凭证完成最小生成请求。";
   }
   if (connection.checkStatus === "failed" && connection.failureCode) {
     return getFailureLabel(connection.failureCode);
@@ -266,7 +256,7 @@ function getCheckSummary(connection: ProviderConnection): string {
 function getFailureLabel(code: ProviderConnectionFailureCode): string {
   const labels: Record<ProviderConnectionFailureCode, string> = {
     authentication_failed: "认证失败，请检查 API Key。",
-    model_not_found: "未找到模型，请核对模型 ID 与兼容地址。",
+    model_not_found: "默认模型不可用，请刷新模型目录后重试。",
     network_error: "无法安全连接到该公开网络地址。",
     provider_error: "供应商返回了无法归类的失败，请稍后再试。",
     rate_limited: "供应商触发限流，请稍后再试。",
@@ -285,7 +275,7 @@ function getNotice(code: string | undefined): {
     { description: string; destructive: boolean; title: string }
   > = {
     connected: {
-      description: "当前地址、模型与凭证已通过最小生成请求。",
+      description: "当前地址、默认模型与凭证已通过最小生成请求。",
       destructive: false,
       title: "连接正常",
     },
@@ -305,9 +295,19 @@ function getNotice(code: string | undefined): {
       title: "凭证服务不可用",
     },
     invalid: {
-      description: "请填写合法的兼容地址和模型 ID。",
+      description: "请填写合法的 API Key 和兼容地址。",
       destructive: true,
       title: "配置不完整",
+    },
+    "model-discovery-failed": {
+      description: "无法从供应商读取模型目录，请检查 API Key、地址或上游服务状态。",
+      destructive: true,
+      title: "模型目录获取失败",
+    },
+    "model-list-empty": {
+      description: "供应商没有返回可用于文本生成的模型。",
+      destructive: true,
+      title: "没有可用模型",
     },
     "not-found": {
       description: "该配置不存在或已被删除。",
@@ -320,7 +320,7 @@ function getNotice(code: string | undefined): {
       title: "保存失败",
     },
     saved: {
-      description: "地址、模型、启用状态与加密凭证状态已更新。",
+      description: "模型目录、默认模型、地址、启用状态与加密凭证已更新。",
       destructive: false,
       title: "配置已保存",
     },

@@ -1,5 +1,5 @@
 /**
- * [INPUT]: AI adapter 配置、协议兼容性和请求目标校验失败
+ * [INPUT]: AI adapter 配置、协议兼容性、模型目录响应和请求目标校验失败
  * [OUTPUT]: 不包含 credential、上游响应体或内部 URL 的稳定 AiAdapterError
  * [POS]: @repo/ai 对 composition root 暴露的安全失败边界
  * [DOC]: docs/architecture/ai-adapters.md
@@ -13,6 +13,8 @@ export type AiAdapterErrorCode =
   | "invalid_adapter_configuration"
   | "missing_credential"
   | "network_target_rejected"
+  | "provider_request_failed"
+  | "provider_response_invalid"
   | "unsupported_protocol";
 
 export class AiAdapterError extends Error {
