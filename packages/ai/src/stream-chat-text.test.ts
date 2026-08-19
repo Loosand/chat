@@ -1,6 +1,6 @@
 /**
- * [INPUT]: streamChatText、AI SDK MockLanguageModelV4、prompt/messages 与 AbortSignal
- * [OUTPUT]: 流式文本、system/message 转换、中断传递和零 SDK 重试回归覆盖
+ * [INPUT]: streamChatText、AI SDK MockLanguageModelV4、prompt/messages、输出上限与 AbortSignal
+ * [OUTPUT]: 流式文本、system/message、输出上限、中断传递和零 SDK 重试回归覆盖
  * [POS]: @repo/ai 文本执行边界的可执行规范
  * [DOC]: docs/architecture/ai-adapters.md
  *
@@ -21,6 +21,7 @@ describe("streamChatText", () => {
     const result = streamChatText({
       abortSignal: abortController.signal,
       messages: [{ role: "user", content: "hello" }],
+      maxOutputTokens: 7,
       model,
       system: "be concise",
     });
@@ -29,6 +30,7 @@ describe("streamChatText", () => {
     expect(model.doStreamCalls).toHaveLength(1);
     expect(model.doStreamCalls[0]).toMatchObject({
       abortSignal: abortController.signal,
+      maxOutputTokens: 7,
       prompt: [
         { role: "system", content: "be concise" },
         { role: "user", content: [{ type: "text", text: "hello" }] },

@@ -1,8 +1,8 @@
 # Model Catalog
 
-> 代码源头：`packages/contracts/src/model-catalog.ts`、`packages/model-router/src/service.ts`、`packages/model-router/src/network-policy.ts`、`packages/database/src/model-catalog-schema.ts`、`packages/database/src/model-catalog-repository.ts`
-> 状态：Goal 2.3 已实现稳定 contract、四层 PostgreSQL schema/migration、受校验 CRUD/CAS、公开目录、网络目标策略与 fail-closed 单 route 解析；Goal 2.4 已实现首批文本 provider adapter；Goal 2.6a 已实现单模型环境 bootstrap；管理 HTTP/UI 和完整路由引擎尚未实现。
-> 审计日期：2026-08-12。
+> 代码源头：`packages/contracts/src/model-catalog.ts`、`packages/contracts/src/provider-connection.ts`、`packages/model-router/src/service.ts`、`packages/model-router/src/provider-connection-service.ts`、`packages/database/src/model-catalog-schema.ts`、`packages/database/src/provider-connection-schema.ts`、`apps/web/server/provider-runtime.ts`
+> 状态：Goal 2 模型目录、首批 adapter 和环境 bootstrap 已实现；Goal 3.2 owner-scoped 用户供应商连接、加密 credential、真实连通性检查与最小设置 UI 已实现。用户配置到 chat run 的 route 解析尚未实现；全局目录管理 UI 和完整路由引擎也不属于 Learning Chatbot v1。
+> 审计日期：2026-08-19。
 
 ## 决策
 
@@ -24,7 +24,7 @@
 
 四表都使用 UUID 主键、`created_at`/`updated_at` 和非负 `revision`。关键业务身份使用唯一键；被 binding/route 引用的记录使用 `ON DELETE RESTRICT`，避免管理员删除配置后让已有 route 失去解释。删除用例把引用冲突映射为稳定 `catalog_record_referenced`，要求管理员先显式停用、解绑，再删除。
 
-`revision` 驱动所有 update/delete 的 compare-and-set；不存在、过期 revision、唯一身份冲突和未知持久化错误分别映射为稳定安全错误。`priority` 和 `weight` 已进入 route schema 以避免下一阶段重做数据模型，但 Goal 2.3 **没有**实现加权随机、failover 或 circuit；这些属于 Goal 3。
+`revision` 驱动所有 update/delete 的 compare-and-set；不存在、过期 revision、唯一身份冲突和未知持久化错误分别映射为稳定安全错误。`priority` 和 `weight` 已进入 route schema，但 Goal 2.3 **没有**实现加权随机、failover 或 circuit。Learning Chatbot v1 也不会启用这些预留字段；它们只在未来出现真实多路由需求时再继续设计。
 
 ## 稳定 contract
 
@@ -42,15 +42,25 @@ Capability 在应用写入边界用严格 Zod schema 校验：数组不得为空
 
 ## Credential 与 URL 安全
 
-首期 credential 只保存：
+环境 bootstrap 的 credential 继续只保存：
 
 ```json
 { "source": "environment", "name": "OPENAI_API_KEY" }
 ```
 
-数据库、API、日志、route snapshot 和调试记录都不得保存解析后的 key。运行时 composition root 根据 `name` 从 server environment 读取值，再注入 `@repo/ai` adapter；浏览器永远拿不到 credential reference 或 value。多 key、加密数据库 secret 和外部 secret manager 属于 Goal 3，届时扩展为新版本/新 union member，不在现有字段里塞明文。
+数据库、API、日志、route snapshot 和调试记录都不得保存环境 key 的解析值。运行时 composition root 根据 `name` 从 server environment 读取值，再注入 `@repo/ai` adapter；浏览器永远拿不到 credential reference 或 value。
 
-Upstream 默认 `allow_private_network = false`。共享 `@repo/network-security` policy 在 create/update 时只接受无 credentials/query/hash 的 HTTP(S) URL，规范化尾斜杠，解析全部 DNS answers，并用 `ipaddr.js` 拒绝 loopback、link-local、private、CGNAT、reserved、multicast、IPv4-mapped IPv6 等特殊范围；任一 answer 不安全即整体拒绝。只有管理员明确允许时才放行 loopback/private/CGNAT/ULA；metadata/link-local 和 reserved 目标始终拒绝。
+用户级 `ProviderConnection` 使用独立表和独立 secret 边界，不改变现有 `SecretReference`：
+
+- preset 固定为 Anthropic-compatible、OpenAI-compatible、Gemini-compatible、Grok-compatible 与 DeepSeek-compatible。
+- 每个 owner/preset 最多一条记录，保存兼容 Base URL、默认模型 ID、供应商启用状态、revision 与最近检查结果。
+- API Key 使用独立的 `PROVIDER_CREDENTIAL_ENCRYPTION_KEY` 通过 AES-256-GCM 加密为版本化 `v1` envelope；不得复用 `BETTER_AUTH_SECRET`。
+- repository 只读取/写入 `encryptedCredential`；公开 `ProviderConnection` 只返回 `hasCredential: true`。更新时空 key 保留现有密文，页面从不回填明文或密文。
+- 明文只允许在服务端 vault 解密到 verifier 的短调用栈中停留。检查使用已有 AI adapter、15 秒超时、最多 1 output token 和零 SDK 重试，并只持久化稳定失败分类。
+
+多 key picker、密钥轮换批处理和外部 secret manager 不属于 v1。
+
+Upstream 默认 `allow_private_network = false`。共享 `@repo/network-security` policy 在 create/update 时只接受无 credentials/query/hash 的 HTTP(S) URL，规范化尾斜杠，解析全部 DNS answers，并用 `ipaddr.js` 拒绝 loopback、link-local、private、CGNAT、reserved、multicast、IPv4-mapped IPv6 等特殊范围；任一 answer 不安全即整体拒绝。环境 bootstrap 只有部署者明确允许时才放行部分私网；用户供应商配置始终使用 `allowPrivateNetwork: false`，metadata/link-local 和 reserved 目标始终拒绝。
 
 Goal 2.4 已补齐运行时第二层：provider adapter 每次请求前重复 URL/DNS 检查，限制到配置 base 的同 origin/path，使用 Undici connector lookup 对同一批 DNS answers 逐个复验并直接 pin 给 socket，且固定 `redirect: manual`。保存时通过不等于永久授权该 IP；完整规则见 [`network-security.md`](./network-security.md)。
 
@@ -63,6 +73,8 @@ Goal 2.4 已补齐运行时第二层：provider adapter 每次请求前重复 UR
 - Upstream 名称、binding identity、Platform Model key 和 route binding 不可重复。
 - protocol、task、revision、sort、priority、weight 受数据库约束。
 - route 引用的 Platform Model、binding 与 Upstream 不能被隐式删除。
+
+`0004_foamy_maximus.sql` 追加 `provider_connections`。PGlite 从零执行完整 migration 历史，并验证 owner/preset 唯一性、preset/check/failure/revision/长度约束、检查结果一致性、用户删除级联，以及 repository 的密文保存、revision 和 owner 隔离。migration 只生成和测试，未对未知开发/生产数据库自动执行。
 
 Vercel 与 Docker 继续使用同一套 PostgreSQL schema 和 forward-only migration；Web 冷启动不自动迁移。
 
@@ -80,8 +92,10 @@ Vercel 与 Docker 继续使用同一套 PostgreSQL schema 和 forward-only migra
 
 ## 部署 bootstrap 与下一步边界
 
-Goal 2.4 已提供接受稳定 route 字段和运行时 secret value 的 AI SDK adapter；Goal 2.5 的 `@repo/chat-engine` 已把 `ResolvedModelRoute` 转为模型输入、在运行时解析环境 secret reference，并固定不含 secret value 的 route snapshot。Goal 2.6a 允许 Vercel/Docker 用 `CHAT_MODEL_*` 幂等补齐首条四层 route，且不会把密钥值写入数据库或覆盖已有管理员配置；完整规则见 [`model-bootstrap.md`](./model-bootstrap.md)。管理 HTTP/UI 留到薄管理界面阶段。以下能力仍属 Goal 3：多 route 选择、priority group 内加权随机、最多三路 failover、key picker、两级 circuit、429 backoff、probe/debug、Vendor、Display Group、权限组和价格。
+Goal 2.4 已提供接受稳定 route 字段和运行时 secret value 的 AI SDK adapter；Goal 2.5 的 `@repo/chat-engine` 已把 `ResolvedModelRoute` 转为模型输入、在运行时解析环境 secret reference，并固定不含 secret value 的 route snapshot。Goal 2.6a 允许 Vercel/Docker 用 `CHAT_MODEL_*` 幂等补齐首条四层 route，且不会把密钥值写入数据库或覆盖已有配置；完整规则见 [`model-bootstrap.md`](./model-bootstrap.md)。
+
+Goal 3 已增加 owner-scoped 供应商连接、加密 credential、连通性检查、供应商启用状态和对应 Server Action/UI。当前聊天 runtime 仍只解析环境 bootstrap route；下一原子功能才把已启用且检查可用的用户配置转换为 chat model route。多 route 选择、priority group 内加权随机、最多三路 failover、key picker、两级 circuit、429 backoff、完整 probe/debug、Vendor、Display Group、权限组和价格均在 v1 范围外。
 
 ## 变更协议
 
-Protocol、task、capability、credential reference、四表字段/约束或删除语义变化时，必须同步 contract、schema、追加 migration、测试、本文档、`design.md` 与根 README。禁止改写已经发布的 migration。
+Protocol、task、capability、credential reference、ProviderPreset、目录/连接表字段约束或删除语义变化时，必须同步 contract、schema、追加 migration、测试、本文档、`design.md` 与根 README。禁止改写已经发布的 migration。

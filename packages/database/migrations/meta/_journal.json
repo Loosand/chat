@@ -29,6 +29,13 @@
       "when": 1786548278536,
       "tag": "0003_flat_tana_nile",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1787125655361,
+      "tag": "0004_foamy_maximus",
+      "breakpoints": true
     }
   ]
 }

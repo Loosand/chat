@@ -1,6 +1,6 @@
 /**
- * [INPUT]: @repo/database 内部连接工厂、Chat/ModelCatalog repository adapter 与各事实 schema
- * [OUTPUT]: 数据库 handle、连接/repository 创建 API及聊天、认证、模型目录表
+ * [INPUT]: @repo/database 内部连接工厂、Chat/ModelCatalog/ProviderConnection adapter 与各事实 schema
+ * [OUTPUT]: 数据库 handle、连接/repository 创建 API及聊天、认证、模型目录、供应商连接表
  * [POS]: database package 唯一公共导出入口
  *
  * [PROTOCOL]:
@@ -19,4 +19,6 @@ export {
   llmUpstreamModels,
   llmUpstreams,
 } from "./model-catalog-schema";
+export { createDrizzleProviderConnectionRepository } from "./provider-connection-repository";
+export { providerConnections } from "./provider-connection-schema";
 export { chatRunEvents, chatRuns, conversations, messages } from "./schema";

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@ai-sdk/react": "^4.0.61",
+    "@repo/ai": "workspace:*",
     "@repo/auth": "workspace:*",
     "@repo/chat": "workspace:*",
     "@repo/chat-engine": "workspace:*",

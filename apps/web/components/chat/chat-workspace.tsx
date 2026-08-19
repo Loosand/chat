@@ -1,6 +1,6 @@
 /**
  * [INPUT]: server snapshot/models、AI SDK useChat 与 durable transport
- * [OUTPUT]: 可发送、流式 checkpoint、显式取消、刷新恢复的最薄聊天工作区
+ * [OUTPUT]: 可发送、流式 checkpoint、显式取消、刷新恢复及供应商设置导航的最薄聊天工作区
  * [POS]: apps/web Goal 2 聊天浏览器状态组合根
  * [DOC]: docs/architecture/frontend-stack.md
  *
@@ -164,6 +164,12 @@ export function ChatWorkspace({
           <h1 className="chat-conversation-title">{title}</h1>
         </div>
         <div className="chat-header-actions">
+          <Link
+            className={buttonVariants({ variant: "ghost" })}
+            href={appRoute("/settings/providers")}
+          >
+            供应商
+          </Link>
           <Link
             className={buttonVariants({ variant: "ghost" })}
             href={appRoute("/chat")}

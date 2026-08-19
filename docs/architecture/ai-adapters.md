@@ -1,7 +1,7 @@
 # AI Provider Adapters
 
-> 代码源头：`packages/ai/src/text-model-adapter.ts`、`packages/ai/src/guarded-fetch.ts`、`packages/ai/src/stream-chat-text.ts`
-> 状态：Goal 2.4 已实现首批文本 adapter、精确 endpoint contract、运行时网络防线、零隐式重试与 usage 归一化；Goal 2.5 已由 `@repo/chat-engine` 接入稳定执行事件与安全错误，debug/failover 仍属 Goal 3。
+> 代码源头：`packages/ai/src/text-model-adapter.ts`、`packages/ai/src/guarded-fetch.ts`、`packages/ai/src/stream-chat-text.ts`、`apps/web/server/provider-connection-verifier.ts`
+> 状态：Goal 2.4 已实现首批文本 adapter、精确 endpoint contract、运行时网络防线、零隐式重试与 usage 归一化；Goal 2.5 已由 `@repo/chat-engine` 接入稳定执行事件与安全错误；Goal 3.2 已复用同一 adapter 做用户供应商真实连通性检查。完整 debug/failover 不属于 Learning Chatbot v1。
 
 ## 边界
 
@@ -30,17 +30,19 @@ adapter 不读取环境，不访问数据库，也不返回 credential。model n
 
 ## 流、重试与停止
 
-`streamChatText()` 接收 prompt 或 AI SDK `ModelMessage[]`、system prompt 与 `AbortSignal`，并固定 `maxRetries: 0`。一次 provider attempt 只发起一次调用；未来 route failover、attempt 上限、accepted/visible/side-effect barrier 与 429 backoff 由 Goal 3 的 Run Engine 统一决定，不能同时叠加 SDK 内部重试。
+`streamChatText()` 接收 prompt 或 AI SDK `ModelMessage[]`、system prompt 与 `AbortSignal`，并固定 `maxRetries: 0`。一次 provider attempt 只发起一次调用；未来如果引入 route failover，attempt 上限、accepted/visible/side-effect barrier 与 429 backoff 必须由 Run Engine 统一决定，不能同时叠加 SDK 内部重试。v1 保持单 route、单 attempt。
 
 函数返回 AI SDK `StreamTextResult` 给执行层，不直接作为浏览器协议。`@repo/chat-engine` 已持续消费 AI SDK `stream`，转换为有限的 text/reasoning/finish/abort 事件并写持久 checkpoint；Next.js HTTP event transport 将从聊天事实读取，不透传 provider stream。
 
-`normalizeTextUsage()` 只输出 `@repo/contracts` 的稳定 token 字段，故意丢弃 provider raw payload。完整 raw usage、provider metadata、sanitized request/response debug 与错误分类会在 Goal 3 设计独立受控 snapshot，不能混入聊天消息或公开错误。
+`normalizeTextUsage()` 只输出 `@repo/contracts` 的稳定 token 字段，故意丢弃 provider raw payload。完整 raw usage、provider metadata、sanitized request/response debug 与更细错误分类如果以后确有排障需求，应设计独立受控 snapshot，不能混入聊天消息或公开错误；v1 不实现该调试面。
 
 ## 网络与 secret
 
 provider fetch 每次请求都要求共享 target policy 复验，限定到配置 base URL 的同 origin 与 base path，并固定 manual redirect。生产默认 transport 在 socket lookup 内再次校验并 pin DNS 地址；完整规则见 [`network-security.md`](./network-security.md)。
 
-credential value 仅存在于创建 provider client 的调用栈。`AiAdapterError` 只暴露稳定 code 与固定安全 message，不携带 provider body、URL、headers 或原始 cause。AI SDK/provider 原始异常由 `@repo/chat-engine` 收敛为固定失败后才能进入聊天事实；受控 debug snapshot 仍待 Goal 3。
+credential value 仅存在于创建 provider client 的调用栈。`AiAdapterError` 只暴露稳定 code 与固定安全 message，不携带 provider body、URL、headers 或原始 cause。AI SDK/provider 原始异常由 `@repo/chat-engine` 收敛为固定聊天失败；用户配置检查则由 Web verifier 收敛为认证失败、模型不存在、限流、超时、网络失败或供应商失败，原始错误不进入页面或数据库。
+
+`streamChatText()` 允许调用方额外收紧 `maxOutputTokens`。供应商检查固定为 1 token、15 秒 Abort 和 `maxRetries: 0`，只验证当前 Base URL、模型 ID 与解密后的 credential 能完成最小生成；它不承担模型列表发现、价格探测或持续健康检查。
 
 ## 验证
 

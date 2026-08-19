@@ -1,6 +1,6 @@
 /**
- * [INPUT]: @repo/model-router 内部模型、errors、ports、network policy 与 service
- * [OUTPUT]: 模型目录领域、管理、URL policy 和单-route 解析的完整公共 API
+ * [INPUT]: @repo/model-router 内部模型、供应商连接、errors、ports、network policy 与 service
+ * [OUTPUT]: 模型目录、用户供应商连接、URL policy 和单-route 解析的完整公共 API
  * [POS]: @repo/model-router 唯一公共导出入口
  * [DOC]: docs/architecture/model-catalog.md
  *
@@ -45,6 +45,36 @@ export type {
   UpdateUpstreamModelRecord,
   UpdateUpstreamRecord,
 } from "./ports";
+export type { ProviderConnectionErrorCode } from "./provider-connection-errors";
+export {
+  isProviderConnectionError,
+  ProviderConnectionError,
+} from "./provider-connection-errors";
+export type {
+  ProviderConnection,
+  ProviderConnectionRecord,
+  ProviderPresetDefinition,
+} from "./provider-connection-model";
+export {
+  getProviderPresetDefinition,
+  providerPresetDefinitions,
+} from "./provider-connection-model";
+export type {
+  ProviderConnectionClock,
+  ProviderConnectionIdGenerator,
+  ProviderConnectionRepository,
+  ProviderConnectionVerificationResult,
+  ProviderConnectionVerificationTarget,
+  ProviderConnectionVerifier,
+  ProviderCredentialVault,
+} from "./provider-connection-ports";
+export type {
+  CreateProviderConnectionServiceInput,
+  ProviderConnectionIdentityInput,
+  ProviderConnectionService,
+  SaveProviderConnectionInput,
+} from "./provider-connection-service";
+export { createProviderConnectionService } from "./provider-connection-service";
 export type {
   CreateModelCatalogServiceInput,
   CreateModelRouteInput,

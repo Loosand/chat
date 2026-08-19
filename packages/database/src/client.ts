@@ -1,6 +1,6 @@
 /**
  * [INPUT]: PostgreSQL 连接字符串与可选连接池上限
- * [OUTPUT]: 带聊天、认证与模型目录 schema 的 Drizzle database、postgres client 与显式 close 方法
+ * [OUTPUT]: 带聊天、认证、模型目录与供应商连接 schema 的 Drizzle database、postgres client 与显式 close 方法
  * [POS]: @repo/database 的惰性 PostgreSQL 连接工厂
  *
  * [PROTOCOL]:
@@ -17,6 +17,7 @@ import {
   llmUpstreamModels,
   llmUpstreams,
 } from "./model-catalog-schema";
+import { providerConnections } from "./provider-connection-schema";
 import { chatRunEvents, chatRuns, conversations, messages } from "./schema";
 
 const schema = {
@@ -29,6 +30,7 @@ const schema = {
   llmUpstreamModels,
   llmUpstreams,
   messages,
+  providerConnections,
   rateLimit,
   session,
   user,

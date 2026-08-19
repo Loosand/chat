@@ -1,8 +1,8 @@
 # 项目概述
 
-Chat 是一个从简开始的多模型聊天平台 Monorepo。Goal 1 聊天领域/持久化，以及 Goal 2 的生产认证、模型目录、AI adapter、chat run 执行器、HTTP/checkpoint 协议、单模型环境 bootstrap 和最薄持久聊天界面已完成；当前下一阶段是 Goal 3 完整模型网关。计费、工具、文件、媒体与后台仍处于后续 Goal，不得把目标设计写成已实现能力。
+Chat 是一个以学习为主要目标的个人多模型 Chatbot Monorepo，不以等价复刻 DEEIX 或 LobeHub 为验收标准。Goal 1 聊天领域/持久化，以及 Goal 2 的生产认证、模型目录、AI adapter、chat run 执行器、HTTP/checkpoint 协议、单模型环境 bootstrap 和最薄持久聊天界面已完成；Goal 3.2 用户供应商连接与 Goal 3.3 的最小供应商设置已实现，下一步是把用户配置接入聊天模型选择并补齐会话记录管理。首批产品入口固定为 Anthropic-compatible、OpenAI-compatible、Gemini-compatible、Grok-compatible 与 DeepSeek-compatible；完整模型网关、计费、Skill、MCP/连接器、工具、文件、媒体与管理后台均不属于当前阶段，不得把规划写成已实现能力。
 
-产品功能事实以 `docs/DEEIX_FEATURE_INVENTORY.zh-CN.md` 为参考，目标技术方案以 `docs/DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md` 为参考，当前架构取舍以根目录 `design.md` 为准。
+当前产品范围和架构取舍以根目录 `design.md` 与 `docs/architecture/implementation-goals.md` 为准。`docs/DEEIX_FEATURE_INVENTORY.zh-CN.md` 和 `docs/DEEIX_REIMPLEMENTATION_ARCHITECTURE.zh-CN.md` 只保留为历史研究与局部方案参考，不再定义路线或完成标准。
 
 ## 强制分形文档协议
 

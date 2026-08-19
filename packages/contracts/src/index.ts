@@ -1,6 +1,6 @@
 /**
- * [INPUT]: 项目身份、部署 profile、聊天与模型目录稳定 contract
- * [OUTPUT]: 项目身份、部署 profile、聊天与模型目录公共 schema/type
+ * [INPUT]: 项目身份、部署 profile、聊天、模型目录与供应商连接稳定 contract
+ * [OUTPUT]: 项目身份、部署 profile、聊天、模型目录与供应商连接公共 schema/type
  * [POS]: @repo/contracts 唯一公共导出入口
  *
  * [PROTOCOL]:
@@ -11,7 +11,7 @@
 import { z } from "zod";
 
 export const APP_NAME = "Chat";
-export const PROJECT_STAGE = "Goal 2 · vertical slice";
+export const PROJECT_STAGE = "Goal 3 · provider management";
 
 export const deploymentProfileSchema = z.enum([
   "vercel-core",
@@ -106,3 +106,13 @@ export {
   secretEnvironmentVariableNameSchema,
   secretReferenceSchema,
 } from "./model-catalog";
+export type {
+  ProviderConnectionCheckStatus,
+  ProviderConnectionFailureCode,
+  ProviderPreset,
+} from "./provider-connection";
+export {
+  providerConnectionCheckStatusSchema,
+  providerConnectionFailureCodeSchema,
+  providerPresetSchema,
+} from "./provider-connection";

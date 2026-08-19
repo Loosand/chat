@@ -1,6 +1,6 @@
 /**
  * [INPUT]: Tailwind CSS v4、Lerpwind、@repo/design-system 语义 token 与 Web 页面元素
- * [OUTPUT]: apps/web 的全局样式，以及使用 viewport-fluid 尺度的首页、认证页和聊天工作区布局
+ * [OUTPUT]: apps/web 的全局样式，以及使用 viewport-fluid 尺度的首页、认证、聊天和供应商设置布局
  * [POS]: Web 样式入口，负责源码扫描并组合共享样式
  *
  * [PROTOCOL]:
@@ -365,8 +365,247 @@
   justify-content: center;
 }
 
+.settings-shell {
+  width: min(72rem, 100%);
+  margin: 0 auto;
+  @apply @px-4/8 @py-8/14;
+}
+
+.settings-header {
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.settings-header h1 {
+  margin: 0;
+  font-weight: 650;
+  letter-spacing: -0.055em;
+  @apply @text-3xl/5xl;
+}
+
+.settings-lede {
+  max-width: 44rem;
+  margin: 0.75rem 0 0;
+  line-height: 1.7;
+  color: var(--muted-foreground);
+}
+
+.settings-header-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.settings-header-actions .sign-out-control {
+  display: block;
+  margin: 0;
+}
+
+.settings-notice {
+  margin-bottom: 1rem;
+}
+
+.settings-section-heading {
+  display: flex;
+  gap: 1rem;
+  align-items: end;
+  justify-content: space-between;
+  margin: 2.5rem 0 1rem;
+}
+
+.settings-section-heading h2,
+.settings-section-heading p {
+  margin: 0;
+}
+
+.settings-section-heading h2 {
+  font-size: 1.125rem;
+}
+
+.settings-section-heading p,
+.settings-section-heading > span {
+  margin-top: 0.35rem;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.settings-section-heading > span {
+  white-space: nowrap;
+}
+
+.provider-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.provider-card-content dl {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+}
+
+.provider-card-content dl > div {
+  display: grid;
+  grid-template-columns: 5rem minmax(0, 1fr);
+  gap: 1rem;
+}
+
+.provider-card-content dt {
+  color: var(--muted-foreground);
+}
+
+.provider-card-content dd {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.provider-card-action {
+  width: 100%;
+}
+
+.provider-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--muted-foreground);
+  white-space: nowrap;
+  background: var(--muted);
+  border-radius: var(--radius-xl);
+}
+
+.provider-status[data-status="connected"] {
+  color: light-dark(oklch(0.38 0.12 150), oklch(0.8 0.14 150));
+  background: light-dark(oklch(0.94 0.04 150), oklch(0.28 0.06 150));
+}
+
+.provider-status[data-status="failed"] {
+  color: var(--destructive);
+  background: color-mix(in oklch, var(--destructive) 10%, transparent);
+}
+
+.provider-status-large {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.settings-detail-shell {
+  width: min(54rem, 100%);
+}
+
+.settings-back-link {
+  padding-left: 0;
+  margin-bottom: 0.75rem;
+}
+
+.provider-form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.provider-field {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.provider-field p,
+.provider-toggle small,
+.provider-check-summary p,
+.provider-danger-zone p {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--muted-foreground);
+}
+
+.provider-toggle {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 1rem;
+  cursor: pointer;
+  background: var(--muted);
+  border-radius: var(--radius-2xl);
+}
+
+.provider-toggle input {
+  width: 1rem;
+  height: 1rem;
+  margin: 0.15rem 0 0;
+}
+
+.provider-toggle span {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.provider-toggle strong {
+  font-size: 0.875rem;
+}
+
+.provider-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+}
+
+.provider-check-card {
+  margin-top: 1rem;
+}
+
+.provider-check-summary,
+.provider-danger-zone {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.provider-check-summary h2,
+.provider-danger-zone h2 {
+  margin: 0 0 0.35rem;
+  font-size: 0.875rem;
+}
+
+.provider-check-summary time {
+  flex-shrink: 0;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+.provider-danger-zone {
+  padding: 1.25rem;
+  margin-top: 2rem;
+  border: 1px solid color-mix(in oklch, var(--destructive) 32%, var(--border));
+  border-radius: var(--radius-3xl);
+}
+
+.provider-delete-confirmation {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.provider-delete-confirmation > span {
+  font-size: 0.75rem;
+  color: var(--destructive);
+}
+
 @media (min-width: 48rem) {
   .panel-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .provider-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -374,5 +613,26 @@
 @media (max-width: 36rem) {
   .chat-composer-hint {
     display: none;
+  }
+
+  .settings-header,
+  .settings-section-heading,
+  .provider-check-summary,
+  .provider-danger-zone {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .settings-header-actions {
+    justify-content: space-between;
+  }
+
+  .provider-form-actions > * {
+    flex: 1;
+  }
+
+  .provider-delete-confirmation {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
